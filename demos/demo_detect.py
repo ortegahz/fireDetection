@@ -26,7 +26,7 @@ def run_wrapper(args):
     try:
         os.chdir(args.yolo_root)
         sys.path.append(args.yolo_root)
-        from detect_dual import parse_opt, run  # 动态导入 detect_dual 模块
+        from detect_dual import parse_opt, run
         opt = parse_opt()
         opt.source = args.source
         opt.imgsz = [args.imgsz, args.imgsz]
