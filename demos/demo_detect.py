@@ -3,6 +3,8 @@ import logging
 import os
 import sys
 
+import inspect
+
 sys.path.append(os.getcwd())
 from utils_wrapper.utils import set_logging
 
@@ -28,14 +30,11 @@ def run_wrapper(args):
         sys.path.append(args.yolo_root)
         from detect_dual import parse_opt, run
         opt = parse_opt()
-        opt.source = args.source
+        opt.__dict__.update(vars(args))
         opt.imgsz = [args.imgsz, args.imgsz]
-        opt.device = args.device
-        opt.weights = args.weights
-        opt.name = args.name
-        opt.view_img = args.view_img
-        opt.conf_thres = args.conf_thres
-        run(**vars(opt))
+        run_params = inspect.signature(run).parameters
+        run_args = {k: v for k, v in vars(opt).items() if k in run_params}
+        run(**run_args)
     finally:
         os.chdir(original_cwd)
 
