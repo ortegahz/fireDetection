@@ -9,10 +9,10 @@ from utils import set_logging
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--dir_root_in',
-                        default='/run/user/1000/gvfs/smb-share:server=172.20.254.200,share=sharedfolder/Test/fire')
+                        default='/run/user/1000/gvfs/smb-share:server=172.20.254.132,share=sharedfolder/test/fire')
     parser.add_argument('--dir_root_out',
-                        default='/home/Huangzhe/Test/fire')
-    parser.add_argument('--subset', default='val')
+                        default='/home/Huangzhe/test/fire')
+    parser.add_argument('--subset', default='v7')
     return parser.parse_args()
 
 
