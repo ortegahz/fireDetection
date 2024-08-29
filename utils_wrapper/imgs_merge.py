@@ -4,7 +4,7 @@ import logging
 import os
 import shutil
 
-from utils import set_logging
+from utils import set_logging, make_dirs
 
 
 def parse_args():
@@ -21,7 +21,7 @@ def run(args):
     image_paths = []
     root_imgs = args.dir_root_in
     output_dir = args.dir_root_out
-    os.makedirs(output_dir, exist_ok=True)
+    make_dirs(output_dir, reset=True)
 
     for ext in image_extensions:
         for image_path in glob.glob(os.path.join(root_imgs, '**', ext), recursive=True):

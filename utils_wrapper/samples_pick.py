@@ -9,7 +9,7 @@ from utils import set_logging, make_dirs
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--labels_dir_in', default='/home/manu/tmp/runs/manu_detect2/labels/')
+    parser.add_argument('--labels_dir_in', default='/home/manu/tmp/runs/manu_detect/labels/')
     parser.add_argument('--imgs_dir_in', default='/home/manu/tmp/BOSH-FM数据采集-samples-merge/')
     parser.add_argument('--labels_dir_out', default='/home/manu/tmp/samples_pick/labels')
     parser.add_argument('--imgs_dir_out', default='/home/manu/tmp/samples_pick/images')

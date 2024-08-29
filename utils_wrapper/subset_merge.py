@@ -58,6 +58,7 @@ def merge_files(subset1, subset2, output_subset, base_dir):
     # Create output directories if they don't exist
     make_dirs(output_imgs_dir, reset=True)
     make_dirs(output_labels_dir, reset=True)
+    os.remove(output_list_file)
 
     # Copy files from subset1
     copy_files_and_write_list(subset1_list_file, subset1_imgs_dir, subset1_labels_dir, output_imgs_dir,

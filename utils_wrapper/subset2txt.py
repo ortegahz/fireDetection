@@ -12,7 +12,7 @@ def parse_args():
                         default='/run/user/1000/gvfs/smb-share:server=172.20.254.132,share=sharedfolder/test/fire')
     parser.add_argument('--dir_root_out',
                         default='/home/Huangzhe/test/fire')
-    parser.add_argument('--subset', default='v7')
+    parser.add_argument('--subset', default='bosh')
     return parser.parse_args()
 
 

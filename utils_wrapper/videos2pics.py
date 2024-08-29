@@ -13,6 +13,7 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--dir_root_in', default='/home/manu/tmp/BOSH-FM数据采集/')
     parser.add_argument('--dir_root_out', default='/home/manu/tmp/BOSH-FM数据采集-samples/')
+    parser.add_argument('--sample_interval', default=8, type=int)
     return parser.parse_args()
 
 
@@ -65,7 +66,7 @@ def run(args):
         output_dir = os.path.join(args.dir_root_out, relative_path, video_name)
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
-        extract_frames(video_path_in, output_dir)
+        extract_frames(video_path_in, output_dir, interval=args.sample_interval)
         logging.info(f"Finished video {idx}/{total_videos}")
 
 
