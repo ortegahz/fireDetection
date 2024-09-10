@@ -14,7 +14,7 @@ from utils import set_logging, make_dirs
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--dir_root_in',
-                        default='/home/manu/tmp/BOSH-FM数据采集-samples-merge/')
+                        default='/media/manu/ST8000DM004-2U91/jade_raw_data/03数据标注-samples-merge/')
     parser.add_argument('--dir_root_out',
                         default='/home/manu/tmp/mm_results/')
     parser.add_argument('--dir_json',

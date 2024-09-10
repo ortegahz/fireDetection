@@ -11,8 +11,10 @@ from utils import set_logging, make_dirs
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--labels_dir_in', default='/home/manu/tmp/mm_results/labels/pseudo/')
-    parser.add_argument('--imgs_dir_in', default='/home/manu/tmp/mm_results/images/pseudo/')
+    # parser.add_argument('--labels_dir_in', default='/home/manu/tmp/mm_results/labels/pseudo/')
+    # parser.add_argument('--imgs_dir_in', default='/home/manu/tmp/mm_results/images/pseudo/')
+    parser.add_argument('--labels_dir_in', default='/home/manu/tmp/samples_pick/labels')
+    parser.add_argument('--imgs_dir_in', default='/home/manu/tmp/samples_pick/images')
     parser.add_argument('--output_dir', default='/home/manu/tmp/labels_show_results')
     return parser.parse_args()
 
@@ -25,7 +27,10 @@ def draw_boxes_on_image(img_path, label_path):
         labels = f.readlines()
 
     for label in labels:
-        cls, center_x, center_y, box_w, box_h = map(float, label.split())
+        if len(label.split()) == 6:
+            cls, center_x, center_y, box_w, box_h, conf = map(float, label.split())
+        else:
+            cls, center_x, center_y, box_w, box_h = map(float, label.split())
         center_x *= width
         center_y *= height
         box_w *= width

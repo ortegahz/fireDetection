@@ -15,13 +15,9 @@ from utils import set_logging, make_dirs
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--labels_dir_in',
-                        default='/home/Huangzhe/test/fire_v3/labels',
-                        help='Path to the input labels directory')
-    parser.add_argument('--imgs_dir_in',
-                        default='/home/Huangzhe/test/fire_v3/images',
-                        help='Path to the input images directory')
-    parser.add_argument('--output_dir', default='/home/Huangzhe/test/voc_fire/VOCdevkit/VOC2007')
+    parser.add_argument('--labels_dir_in', default='/home/manu/tmp/fire_v4/labels')
+    parser.add_argument('--imgs_dir_in', default='/home/manu/tmp/fire_v4/images')
+    parser.add_argument('--output_dir', default='/home/manu/tmp/fire_unlabeled/VOCdevkit/VOC2007')
     parser.add_argument('--class_mapping', default='{"0": "fire", "1": "candle_flame", "2": "round_fire"}')
     return parser.parse_args()
 
@@ -63,7 +59,10 @@ def create_voc_xml(output_path, image_path, image_width, image_height, yolo_labe
     segmented.text = "0"
 
     for label in yolo_labels:
-        cls, center_x, center_y, box_w, box_h = map(float, label.split())
+        if len(label.split()) == 6:
+            cls, center_x, center_y, box_w, box_h, conf = map(float, label.split())
+        else:
+            cls, center_x, center_y, box_w, box_h = map(float, label.split())
 
         # Convert normalized coordinates to absolute coordinates
         center_x_abs = center_x * image_width

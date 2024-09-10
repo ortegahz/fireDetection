@@ -4,15 +4,17 @@ import logging
 import os
 import shutil
 
+from tqdm import tqdm
+
 from utils import set_logging, make_dirs
 
 
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--dir_root_in',
-                        default='/home/manu/tmp/BOSH-FM数据采集-samples/')
+                        default='/media/manu/ST8000DM004-2U91/jade_raw_data/03数据标注-samples/')
     parser.add_argument('--dir_root_out',
-                        default='/home/manu/tmp/BOSH-FM数据采集-samples-merge/')
+                        default='/media/manu/ST8000DM004-2U91/jade_raw_data/03数据标注-samples-merge/')
     return parser.parse_args()
 
 
@@ -23,13 +25,24 @@ def run(args):
     output_dir = args.dir_root_out
     make_dirs(output_dir, reset=True)
 
+    all_image_paths = []
     for ext in image_extensions:
-        for image_path in glob.glob(os.path.join(root_imgs, '**', ext), recursive=True):
-            relative_path = os.path.relpath(image_path, root_imgs)
-            new_image_name = '_'.join(relative_path.split(os.sep))
-            new_image_path = os.path.join(output_dir, new_image_name)
+        all_image_paths.extend(glob.glob(os.path.join(root_imgs, '**', ext), recursive=True))
+
+    for image_path in tqdm(all_image_paths, desc="Processing images"):
+        relative_path = os.path.relpath(image_path, root_imgs)
+        new_image_name = '_'.join(relative_path.split(os.sep))
+        new_image_path = os.path.join(output_dir, new_image_name)
+
+        if len(new_image_path) > 255:
+            logging.warning(f"File path too long, skipping: {new_image_path}")
+            continue
+
+        try:
             shutil.copy2(image_path, new_image_path)
             image_paths.append(new_image_path)
+        except OSError as e:
+            logging.error(f"Error copying file {image_path} to {new_image_path}: {e}")
 
 
 def main():

@@ -1,6 +1,6 @@
 # infer
 
-python demos/demo_detect.py 
+screen python demos/demo_detect.py 
 
 # data
 
