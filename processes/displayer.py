@@ -41,7 +41,7 @@ def process_displayer(queue, queue_res, event):
     cv2.namedWindow(name_window, cv2.WINDOW_NORMAL)
     cv2.resizeWindow(name_window, 960, 540)
 
-    idx_frame_res, det_res = -1, None
+    idx_frame_res, det_res, targets = -1, None, []
     while True:
         # if queue.qsize() < 32:  # buffer
         #     continue
@@ -52,19 +52,30 @@ def process_displayer(queue, queue_res, event):
 
         while idx_frame_res < idx_frame:  # TODO
             try:
-                idx_frame_res, det_res = queue_res.get_nowait()
+                idx_frame_res, det_res, targets = queue_res.get_nowait()
                 logging.info(f'displayer idx_frame_res --> {idx_frame_res}')
             except Empty:
-                pass
+                continue
 
-        if idx_frame_res == idx_frame and len(det_res) > 0:
-            det_res = det_res['runs/detect/exp/labels/pseudo']  # TODO
-            frame = draw_boxes(frame, det_res)
+        if idx_frame_res == idx_frame and det_res is not None:
+            # Extract detections from the result dictionary
+            det_res = det_res.get('runs/detect/exp/labels/pseudo', [])
+            # frame = draw_boxes(frame, det_res)
+
+            # Draw tracked targets
+            for target in targets:
+                bbox = target['bbox']
+                top_left_x = int(bbox[0] * frame.shape[1])
+                top_left_y = int(bbox[1] * frame.shape[0])
+                bottom_right_x = int(bbox[2] * frame.shape[1])
+                bottom_right_y = int(bbox[3] * frame.shape[0])
+                cv2.rectangle(frame, (top_left_x, top_left_y), (bottom_right_x, bottom_right_y), (0, 255, 255), 2)
+                cv2.putText(frame, f"ID: {target['id']}", (top_left_x, top_left_y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9,
+                            (36, 255, 12), 2)
 
         cv2.imshow(name_window, frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             event.set()
             break
 
-
-cv2.destroyAllWindows()
+    cv2.destroyAllWindows()

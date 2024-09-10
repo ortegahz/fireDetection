@@ -1,3 +1,4 @@
+import logging
 from queue import Empty
 
 from cores.fire_detector import FireDetector
@@ -6,8 +7,8 @@ from cores.fire_detector import FireDetector
 def process_detector(args, queue, queue_res, event):
     fire_detector = FireDetector(args)
 
-    latest_item = None
-    while True:
+    while not event.is_set():
+        latest_item = None
         # Get the latest frame from the queue
         while True:
             try:
@@ -15,14 +16,20 @@ def process_detector(args, queue, queue_res, event):
             except Empty:
                 break
 
-        if not latest_item:
+        if latest_item is None:
             continue
 
         tsp_frame, idx_frame, frame, fc = latest_item
 
-        # logging.info(f'detector idx_frame --> {idx_frame}')
+        logging.info(f'Detector idx_frame --> {idx_frame}')
         res = fire_detector.infer_yolo(frame)
-        queue_res.put((idx_frame, res))
 
-        if event.is_set():
-            break
+        # Update targets with detection results
+        detections = res.get('runs/detect/exp/labels/pseudo', [])
+        fire_detector.update(detections)
+
+        # Add target tracking results to the output
+        targets = [{'id': t['id'], 'bbox': t['bbox']} for t in fire_detector.targets]
+        queue_res.put((idx_frame, res, targets))
+
+    logging.info('Processing loop exited gracefully.')
