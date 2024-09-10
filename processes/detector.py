@@ -1,26 +1,10 @@
-import inspect
-import logging
-import os
-import sys
-
 from queue import Empty
+
+from cores.fire_detector import FireDetector
 
 
 def process_detector(args, queue, queue_res, event):
-    original_cwd = os.getcwd()
-    try:
-        os.chdir(args.yolo_root)
-        sys.path.append(args.yolo_root)
-        from detect_dual import parse_opt, run
-        from models.common import DetectMultiBackend
-        from utils.torch_utils import select_device
-        opt = parse_opt()
-        opt.__dict__.update(vars(args))
-        opt.imgsz = [args.imgsz, args.imgsz]
-        device = select_device(opt.device)
-        opt.model_global = DetectMultiBackend(args.weights, device=device, dnn=opt.dnn, data=opt.data, fp16=opt.half)
-    finally:
-        os.chdir(original_cwd)
+    fire_detector = FireDetector(args)
 
     latest_item = None
     while True:
@@ -37,19 +21,8 @@ def process_detector(args, queue, queue_res, event):
         tsp_frame, idx_frame, frame, fc = latest_item
 
         # logging.info(f'detector idx_frame --> {idx_frame}')
-
-        # TODO: process
-        original_cwd = os.getcwd()
-        try:
-            # opt.source_npy = cv2.imread(opt.source)
-            opt.source_npy = frame
-            run_params = inspect.signature(run).parameters
-            run_args = {k: v for k, v in vars(opt).items() if k in run_params}
-            res = run(**run_args)
-            logging.info(res)
-            queue_res.put((idx_frame, res))
-        finally:
-            os.chdir(original_cwd)
+        res = fire_detector.infer_yolo(frame)
+        queue_res.put((idx_frame, res))
 
         if event.is_set():
             break
