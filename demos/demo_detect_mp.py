@@ -1,8 +1,5 @@
 import argparse
-import inspect
 import logging
-import os
-import sys
 import time
 from multiprocessing import Process, Queue, Event
 
@@ -28,7 +25,7 @@ def parse_args():
     parser.add_argument('--save-txt', default=False, help='save results to *.txt')
     parser.add_argument('--nosave', default=True, help='do not save images/videos')
     parser.add_argument('--ret-res', default=True)
-    parser.add_argument('--save-conf', default=False, help='save confidences in --save-txt labels')
+    parser.add_argument('--save-conf', default=True, help='save confidences in --save-txt labels')
     return parser.parse_args()
 
 
@@ -55,15 +52,10 @@ def run(args):
     while True:
         item_frame = q_decoder.get()
         tsp_frame, idx_frame, frame, fc = item_frame
-        # print(f'idx_frame --> {idx_frame}')
         if frame is None or stop_event.is_set():
             break
         q_detector.put(item_frame)
         q_displayer.put(item_frame)
-
-    # p_decoder.join()
-    # p_detector.join()
-    # p_displayer.join()
 
 
 def main():
