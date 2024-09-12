@@ -4,7 +4,7 @@ import time
 import cv2
 
 
-def process_decoder(path_video, queue, event, buff_len=5, fps_scale=4):
+def process_decoder(path_video, queue, event, buff_len=5, fps_scale=8):
     idx_frame = 0
     cap = cv2.VideoCapture(path_video)
     fps = cap.get(cv2.CAP_PROP_FPS)

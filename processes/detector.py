@@ -29,7 +29,7 @@ def process_detector(args, queue, queue_res, event):
         fire_detector.update(detections)
 
         # Add target tracking results to the output
-        targets = [{'id': t['id'], 'bbox': t['bbox']} for t in fire_detector.targets]
+        targets = [{'id': t['id'], 'bbox': t['bbox'], 'cls': t['cls']} for t in fire_detector.targets]
         queue_res.put((idx_frame, res, targets))
 
     logging.info('Processing loop exited gracefully.')

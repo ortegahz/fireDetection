@@ -9,7 +9,7 @@ class FireDetector:
         self.opt = self._build_yolo(args)
         self.targets = []
         self.next_id = 0
-        self.iou_threshold = 0.5
+        self.iou_threshold = 0.1
         self.max_lost_frames = 5
 
     def infer_yolo(self, img):
@@ -64,7 +64,7 @@ class FireDetector:
                 best_target['lost_frames'] = 0
                 matched.append(best_target)
             else:
-                self.targets.append({'bbox': bbox, 'id': self.next_id, 'lost_frames': 0})
+                self.targets.append({'bbox': bbox, 'id': self.next_id, 'lost_frames': 0, 'cls': cls})
                 self.next_id += 1
 
         for target in self.targets:
