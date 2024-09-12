@@ -7,9 +7,9 @@ import cv2
 def get_color_for_class(cls):
     # Define a mapping from class ID to color
     color_map = {
-        0: (0, 255, 0),  # Green for class 0
-        1: (255, 0, 0),  # Blue for class 1
-        2: (0, 0, 255),  # Red for class 2
+        0: (0, 255, 255),  # Green for class 0
+        1: (255, 255, 0),  # Blue for class 1
+        2: (255, 0, 255),  # Red for class 2
     }
     # Default to white if the class is not in the map
     return color_map.get(int(cls), (255, 255, 255))
