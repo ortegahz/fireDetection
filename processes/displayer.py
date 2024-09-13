@@ -77,6 +77,7 @@ def process_displayer(queue, queue_res, event):
                 bbox = target.bbox  # Accessing bbox from Target dataclass
                 cls = target.cls  # Accessing cls from Target dataclass
                 age = target.age  # Accessing age from Target dataclass
+                avg_conf = sum(target.conf_list) / len(target.conf_list)
                 color = get_color_for_class(cls)
 
                 # Convert from relative coordinates to absolute coordinates
@@ -86,7 +87,8 @@ def process_displayer(queue, queue_res, event):
                 bottom_right_y = int(bbox[3] * frame.shape[0])
 
                 cv2.rectangle(frame, (top_left_x, top_left_y), (bottom_right_x, bottom_right_y), color, 2)
-                cv2.putText(frame, f"ID: {target.id} CLS: {int(cls)} AGE: {age}", (top_left_x, top_left_y - 10),
+                cv2.putText(frame, f"ID: {target.id} CLS: {int(cls)} AGE: {age} CONF: {avg_conf:.2f}",
+                            (top_left_x, top_left_y - 10),
                             cv2.FONT_HERSHEY_SIMPLEX, 0.9, color, 2)
 
         cv2.imshow(name_window, frame)

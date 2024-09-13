@@ -13,6 +13,7 @@ class Target:
     lost_frames: int = 0
     cls: float = 0.0
     age: int = 0
+    conf_list: list = field(default_factory=list)
 
 
 class FireDetector:
@@ -53,7 +54,7 @@ class FireDetector:
                 cls, center_x, center_y, box_w, box_h, conf = map(float, det.split())
             else:
                 cls, center_x, center_y, box_w, box_h = map(float, det.split())
-                conf = None
+                conf = 0.0
 
             bbox = [
                 center_x - box_w / 2,
@@ -73,16 +74,18 @@ class FireDetector:
             if best_iou > self.iou_threshold:
                 best_target.bbox = bbox
                 best_target.lost_frames = 0
-                best_target.age += 1  # 增加age
+                best_target.age += 1
+                best_target.conf_list.append(conf)
                 matched.append(best_target)
             else:
-                new_target = Target(bbox=bbox, id=self.next_id, lost_frames=0, cls=cls, age=1)  # 初始化age为1
+                new_target = Target(bbox=bbox, id=self.next_id, lost_frames=0, cls=cls, age=1, conf_list=[conf])
                 self.targets.append(new_target)
                 self.next_id += 1
 
         for target in self.targets:
             if target not in matched:
                 target.lost_frames += 1
+                target.conf_list.append(0.0)
 
         self.targets = [t for t in self.targets if t.lost_frames <= self.max_lost_frames]
 
