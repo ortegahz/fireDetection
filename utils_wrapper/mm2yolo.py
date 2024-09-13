@@ -14,11 +14,11 @@ from utils import set_logging, make_dirs
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--dir_root_in',
-                        default='/media/manu/ST8000DM004-2U91/jade_raw_data/03数据标注-samples-merge/')
+                        default='/home/manu/tmp/fire_unlabeled/VOCdevkit/VOC2007/JPEGImages/')
     parser.add_argument('--dir_root_out',
                         default='/home/manu/tmp/mm_results/')
     parser.add_argument('--dir_json',
-                        default='/home/manu/tmp/outputs/preds/')
+                        default='/home/manu/tmp/preds/')
     parser.add_argument('--score_threshold', type=float, default=0.3,
                         help='Score threshold for displaying bounding boxes')
     parser.add_argument('--subset', default='pseudo', help='Subset name')
