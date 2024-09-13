@@ -74,15 +74,19 @@ def process_displayer(queue, queue_res, event):
 
             # Draw tracked targets
             for target in targets:
-                bbox = target['bbox']
-                cls = target.get('cls', -1)  # Assuming 'cls' is stored in target
+                bbox = target.bbox  # Accessing bbox from Target dataclass
+                cls = target.cls  # Accessing cls from Target dataclass
+                age = target.age  # Accessing age from Target dataclass
                 color = get_color_for_class(cls)
+
+                # Convert from relative coordinates to absolute coordinates
                 top_left_x = int(bbox[0] * frame.shape[1])
                 top_left_y = int(bbox[1] * frame.shape[0])
                 bottom_right_x = int(bbox[2] * frame.shape[1])
                 bottom_right_y = int(bbox[3] * frame.shape[0])
+
                 cv2.rectangle(frame, (top_left_x, top_left_y), (bottom_right_x, bottom_right_y), color, 2)
-                cv2.putText(frame, f"ID: {target['id']} CLS: {int(cls)}", (top_left_x, top_left_y - 10),
+                cv2.putText(frame, f"ID: {target.id} CLS: {int(cls)} AGE: {age}", (top_left_x, top_left_y - 10),
                             cv2.FONT_HERSHEY_SIMPLEX, 0.9, color, 2)
 
         cv2.imshow(name_window, frame)

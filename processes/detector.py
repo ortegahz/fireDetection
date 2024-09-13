@@ -1,7 +1,7 @@
 import logging
 from queue import Empty
 
-from cores.fire_detector import FireDetector
+from cores.fire_detector import FireDetector  # 确保导入 FireDetector 类
 
 
 def process_detector(args, queue, queue_res, event):
@@ -29,7 +29,6 @@ def process_detector(args, queue, queue_res, event):
         fire_detector.update(detections)
 
         # Add target tracking results to the output
-        targets = [{'id': t['id'], 'bbox': t['bbox'], 'cls': t['cls']} for t in fire_detector.targets]
-        queue_res.put((idx_frame, res, targets))
+        queue_res.put((idx_frame, res, fire_detector.targets))
 
     logging.info('Processing loop exited gracefully.')

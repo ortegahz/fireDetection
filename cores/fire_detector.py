@@ -3,6 +3,17 @@ import logging
 import os
 import sys
 
+from dataclasses import dataclass, field
+
+
+@dataclass
+class Target:
+    bbox: list = field(default_factory=list)
+    id: int = 0
+    lost_frames: int = 0
+    cls: float = 0.0
+    age: int = 0
+
 
 class FireDetector:
     def __init__(self, args):
@@ -54,24 +65,26 @@ class FireDetector:
             best_iou = 0
             best_target = None
             for target in self.targets:
-                iou = self.calculate_iou(bbox, target['bbox'])
+                iou = self.calculate_iou(bbox, target.bbox)
                 if iou > best_iou:
                     best_iou = iou
                     best_target = target
 
             if best_iou > self.iou_threshold:
-                best_target['bbox'] = bbox
-                best_target['lost_frames'] = 0
+                best_target.bbox = bbox
+                best_target.lost_frames = 0
+                best_target.age += 1  # 增加age
                 matched.append(best_target)
             else:
-                self.targets.append({'bbox': bbox, 'id': self.next_id, 'lost_frames': 0, 'cls': cls})
+                new_target = Target(bbox=bbox, id=self.next_id, lost_frames=0, cls=cls, age=1)  # 初始化age为1
+                self.targets.append(new_target)
                 self.next_id += 1
 
         for target in self.targets:
             if target not in matched:
-                target['lost_frames'] += 1
+                target.lost_frames += 1
 
-        self.targets = [t for t in self.targets if t['lost_frames'] <= self.max_lost_frames]
+        self.targets = [t for t in self.targets if t.lost_frames <= self.max_lost_frames]
 
     @staticmethod
     def calculate_iou(boxA, boxB):
