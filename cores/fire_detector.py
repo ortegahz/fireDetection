@@ -116,6 +116,8 @@ class FireDetector:
         Returns:
             The mean absolute difference between the patches in the previous and current frames.
         """
+        if prev_frame is None:
+            return 0.0
         prev_patch = self._extract_patch(prev_frame, bbox, frame_shape)
         curr_patch = self._extract_patch(curr_frame, bbox, frame_shape)
         if prev_patch.size > 0 and curr_patch.size > 0:

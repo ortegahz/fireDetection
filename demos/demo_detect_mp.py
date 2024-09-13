@@ -14,7 +14,7 @@ def parse_args():
     # parser.add_argument('--path_video',
     #                     default='/home/manu/mnt/ST8000DM004-2U91/jade_raw_data/03数据标注/01 数据采集/bosch数据采集/BOSH-FM数据采集/BOSH-FM数据采集/zheng-shinei/Z-D-170m-1.mp4')
     parser.add_argument('--path_video',
-                        default='/home/manu/tmp/正例/26408a05b9b34fe26ca386d1e14bbe33.mp4')
+                        default='/home/manu/tmp/xgs_20240913/videos/positive/8.mp4')
     parser.add_argument('--source',
                         default='/home/manu/tmp/1/01 数据采集_bosch数据采集_博世数据_博世数据采集20240614_huo-shinei_huo-4mm-10m-0_frame_000000.jpg')
     parser.add_argument('--yolo_root', default='/media/manu/ST2000DM005-2U91/workspace/yolov9/')
