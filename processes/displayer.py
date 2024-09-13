@@ -72,14 +72,19 @@ def process_displayer(queue, queue_res, event):
             det_res = det_res.get('runs/detect/exp/labels/pseudo', [])
             # frame = draw_boxes(frame, det_res)
 
+            th_age = 12
             # Draw tracked targets
             for target in targets:
                 bbox = target.bbox  # Accessing bbox from Target dataclass
                 cls = target.cls  # Accessing cls from Target dataclass
                 age = target.age  # Accessing age from Target dataclass
-                avg_conf = sum(target.conf_list) / len(target.conf_list)  # 计算平均置信度
-                avg_diff = sum(target.diff_list) / len(target.diff_list)  # 计算平均帧差
-                color = get_color_for_class(cls)
+                avg_conf = sum(target.conf_list[-th_age:]) / th_age
+                avg_diff = sum(target.diff_list[-th_age:]) / th_age
+
+                if age > th_age and avg_conf > 0.5:
+                    color = (0, 0, 255)
+                else:
+                    color = get_color_for_class(cls)
 
                 # Convert from relative coordinates to absolute coordinates
                 top_left_x = int(bbox[0] * frame.shape[1])
