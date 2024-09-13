@@ -49,6 +49,38 @@ def draw_boxes(frame, detections):
     return frame
 
 
+def process_displayer_night(queue, queue_res, event):
+    name_window = 'frame'
+    cv2.namedWindow(name_window, cv2.WINDOW_NORMAL)
+    cv2.resizeWindow(name_window, 960, 540)
+
+    idx_frame_res, max_contour = -1, None
+    while True:
+        tsp_frame, idx_frame, frame, fc = queue.get()
+
+        if idx_frame > fc - 8:
+            break
+
+        logging.info(f'displayer idx_frame --> {idx_frame}')
+
+        while idx_frame_res < idx_frame:
+            try:
+                idx_frame_res, max_contour = queue_res.get_nowait()
+                logging.info(f'displayer idx_frame_res --> {idx_frame_res}')
+            except Empty:
+                continue
+
+        if idx_frame_res == idx_frame and max_contour is not None:
+            cv2.drawContours(frame, [max_contour], -1, (0, 255, 0), 2)
+
+        cv2.imshow(name_window, frame)
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            event.set()
+            break
+
+    cv2.destroyAllWindows()
+
+
 def process_displayer(queue, queue_res, event):
     name_window = 'frame'
     cv2.namedWindow(name_window, cv2.WINDOW_NORMAL)

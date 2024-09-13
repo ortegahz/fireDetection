@@ -19,6 +19,20 @@ class Target:
     diff_list: list = field(default_factory=list)
 
 
+class FireDetectorNight:
+    def __init__(self):
+        pass
+
+    def find_max_contour(self, frame):
+        frame_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        _, thresh = cv2.threshold(frame_gray, 200, 255, cv2.THRESH_BINARY)
+        contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        if contours:
+            return max(contours, key=cv2.contourArea)
+        else:
+            return None
+
+
 class FireDetector:
     def __init__(self, args):
         self.opt = self._build_yolo(args)

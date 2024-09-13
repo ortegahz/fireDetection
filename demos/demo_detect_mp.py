@@ -1,11 +1,10 @@
 import argparse
 import logging
-import time
 from multiprocessing import Process, Queue, Event
 
 from processes.decoder import process_decoder
-from processes.detector import process_detector
-from processes.displayer import process_displayer
+from processes.detector import process_detector_night
+from processes.displayer import process_displayer_night
 from utils_wrapper.utils import set_logging
 
 
@@ -14,7 +13,7 @@ def parse_args():
     # parser.add_argument('--path_video',
     #                     default='/home/manu/mnt/ST8000DM004-2U91/jade_raw_data/03数据标注/01 数据采集/bosch数据采集/BOSH-FM数据采集/BOSH-FM数据采集/zheng-shinei/Z-D-170m-1.mp4')
     parser.add_argument('--path_video',
-                        default='/home/manu/tmp/xgs_20240913/videos/positive/7.avi')
+                        default='/home/manu/tmp/JBF000004/20220721000752.mp4')
     parser.add_argument('--source',
                         default='/home/manu/tmp/1/01 数据采集_bosch数据采集_博世数据_博世数据采集20240614_huo-shinei_huo-4mm-10m-0_frame_000000.jpg')
     parser.add_argument('--yolo_root', default='/media/manu/ST2000DM005-2U91/workspace/yolov9/')
@@ -36,19 +35,28 @@ def run(args):
 
     stop_event = Event()
 
-    q_detector = Queue()
-    q_detector_res = Queue()
-    p_detector = Process(target=process_detector, args=(args, q_detector, q_detector_res, stop_event), daemon=True)
-    p_detector.start()
-
-    time.sleep(3)  # wait for model init
+    # q_detector = Queue()
+    # q_detector_res = Queue()
+    # p_detector = Process(target=process_detector, args=(args, q_detector, q_detector_res, stop_event), daemon=True)
+    # p_detector.start()
+    #
+    # time.sleep(3)  # wait for model init
+    #
+    # q_displayer = Queue()
+    # p_displayer = Process(target=process_displayer, args=(q_displayer, q_detector_res, stop_event), daemon=True)
+    # p_displayer.start()
 
     q_decoder = Queue()
     p_decoder = Process(target=process_decoder, args=(args.path_video, q_decoder, stop_event), daemon=True)
     p_decoder.start()
 
+    q_detector = Queue()
+    q_detector_res = Queue()
+    p_detector = Process(target=process_detector_night, args=(q_detector, q_detector_res, stop_event))
+    p_detector.start()
+
     q_displayer = Queue()
-    p_displayer = Process(target=process_displayer, args=(q_displayer, q_detector_res, stop_event), daemon=True)
+    p_displayer = Process(target=process_displayer_night, args=(q_displayer, q_detector_res, stop_event))
     p_displayer.start()
 
     while True:
