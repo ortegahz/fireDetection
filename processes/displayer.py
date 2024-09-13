@@ -77,7 +77,8 @@ def process_displayer(queue, queue_res, event):
                 bbox = target.bbox  # Accessing bbox from Target dataclass
                 cls = target.cls  # Accessing cls from Target dataclass
                 age = target.age  # Accessing age from Target dataclass
-                avg_conf = sum(target.conf_list) / len(target.conf_list)
+                avg_conf = sum(target.conf_list) / len(target.conf_list)  # 计算平均置信度
+                avg_diff = sum(target.diff_list) / len(target.diff_list)  # 计算平均帧差
                 color = get_color_for_class(cls)
 
                 # Convert from relative coordinates to absolute coordinates
@@ -87,7 +88,8 @@ def process_displayer(queue, queue_res, event):
                 bottom_right_y = int(bbox[3] * frame.shape[0])
 
                 cv2.rectangle(frame, (top_left_x, top_left_y), (bottom_right_x, bottom_right_y), color, 2)
-                cv2.putText(frame, f"ID: {target.id} CLS: {int(cls)} AGE: {age} CONF: {avg_conf:.2f}",
+                cv2.putText(frame,
+                            f"ID: {target.id} CLS: {int(cls)} AGE: {age} CONF: {avg_conf:.2f} DIFF: {avg_diff:.2f}",
                             (top_left_x, top_left_y - 10),
                             cv2.FONT_HERSHEY_SIMPLEX, 0.9, color, 2)
 

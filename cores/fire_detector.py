@@ -2,8 +2,10 @@ import inspect
 import logging
 import os
 import sys
-
 from dataclasses import dataclass, field
+
+import cv2
+import numpy as np
 
 
 @dataclass
@@ -14,6 +16,7 @@ class Target:
     cls: float = 0.0
     age: int = 0
     conf_list: list = field(default_factory=list)
+    diff_list: list = field(default_factory=list)
 
 
 class FireDetector:
@@ -23,6 +26,7 @@ class FireDetector:
         self.next_id = 0
         self.iou_threshold = 0.1
         self.max_lost_frames = 5
+        self.previous_frame = None
 
     def infer_yolo(self, img):
         original_cwd = os.getcwd()
@@ -41,14 +45,16 @@ class FireDetector:
             os.chdir(original_cwd)
         return res
 
-    def update(self, detections):
+    def update(self, detections, frame):
         """
         Update targets based on new detections.
 
         Args:
             detections: List of detected bounding boxes in the format [x1, y1, x2, y2].
+            frame: The current frame for calculating patch differences.
         """
         matched = []
+        frame_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         for det in detections:
             if len(det.split()) == 6:
                 cls, center_x, center_y, box_w, box_h, conf = map(float, det.split())
@@ -66,7 +72,7 @@ class FireDetector:
             best_iou = 0
             best_target = None
             for target in self.targets:
-                iou = self.calculate_iou(bbox, target.bbox)
+                iou = self._calculate_iou(bbox, target.bbox)
                 if iou > best_iou:
                     best_iou = iou
                     best_target = target
@@ -76,9 +82,14 @@ class FireDetector:
                 best_target.lost_frames = 0
                 best_target.age += 1
                 best_target.conf_list.append(conf)
+
+                diff = self._calculate_frame_difference(self.previous_frame, frame_gray, best_target.bbox, frame.shape)
+                best_target.diff_list.append(diff)
+
                 matched.append(best_target)
             else:
-                new_target = Target(bbox=bbox, id=self.next_id, lost_frames=0, cls=cls, age=1, conf_list=[conf])
+                new_target = Target(bbox=bbox, id=self.next_id, lost_frames=0, cls=cls, age=1, conf_list=[conf],
+                                    diff_list=[0.0])
                 self.targets.append(new_target)
                 self.next_id += 1
 
@@ -86,11 +97,46 @@ class FireDetector:
             if target not in matched:
                 target.lost_frames += 1
                 target.conf_list.append(0.0)
+                diff = self._calculate_frame_difference(self.previous_frame, frame_gray, target.bbox, frame.shape)
+                target.diff_list.append(diff)
 
         self.targets = [t for t in self.targets if t.lost_frames <= self.max_lost_frames]
+        self.previous_frame = frame_gray
+
+    def _calculate_frame_difference(self, prev_frame, curr_frame, bbox, frame_shape):
+        """
+        Calculate the frame difference for a given bounding box.
+
+        Args:
+            prev_frame: The previous frame.
+            curr_frame: The current frame.
+            bbox: The bounding box in normalized coordinates.
+            frame_shape: The shape of the frame.
+
+        Returns:
+            The mean absolute difference between the patches in the previous and current frames.
+        """
+        prev_patch = self._extract_patch(prev_frame, bbox, frame_shape)
+        curr_patch = self._extract_patch(curr_frame, bbox, frame_shape)
+        if prev_patch.size > 0 and curr_patch.size > 0:
+            return np.mean(np.abs(curr_patch - prev_patch))
+        else:
+            return 0.0
 
     @staticmethod
-    def calculate_iou(boxA, boxB):
+    def _extract_patch(frame, bbox, frame_shape):
+        height, width = frame_shape[:2]
+        x1, y1, x2, y2 = bbox
+        x1 = int(x1 * width)
+        y1 = int(y1 * height)
+        x2 = int(x2 * width)
+        y2 = int(y2 * height)
+        if x1 < 0 or y1 < 0 or x2 > width or y2 > height:
+            return np.array([])
+        return frame[y1:y2, x1:x2]
+
+    @staticmethod
+    def _calculate_iou(boxA, boxB):
         xA = max(boxA[0], boxB[0])
         yA = max(boxA[1], boxB[1])
         xB = min(boxA[2], boxB[2])
