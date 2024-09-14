@@ -2,6 +2,7 @@ import logging
 from queue import Empty
 
 import cv2
+import numpy as np
 
 
 def get_color_for_class(cls):
@@ -54,7 +55,7 @@ def process_displayer_night(queue, queue_res, event):
     cv2.namedWindow(name_window, cv2.WINDOW_NORMAL)
     cv2.resizeWindow(name_window, 960, 540)
 
-    idx_frame_res, max_contour = -1, None
+    idx_frame_res, targets = -1, []
     while True:
         tsp_frame, idx_frame, frame, fc = queue.get()
 
@@ -65,13 +66,33 @@ def process_displayer_night(queue, queue_res, event):
 
         while idx_frame_res < idx_frame:
             try:
-                idx_frame_res, max_contour = queue_res.get_nowait()
+                idx_frame_res, targets = queue_res.get_nowait()
                 logging.info(f'displayer idx_frame_res --> {idx_frame_res}')
             except Empty:
                 continue
 
-        if idx_frame_res == idx_frame and max_contour is not None:
-            cv2.drawContours(frame, [max_contour], -1, (0, 255, 0), 2)
+        if idx_frame_res == idx_frame and targets is not None:
+            for target in targets:
+                th_age = 12
+                bbox = target.bbox
+                cls = target.cls  # Accessing cls from Target dataclass
+                age = target.age  # Accessing age from Target dataclass
+                if age > th_age:
+                    color = (0, 0, 255)
+                else:
+                    color = (0, 255, 255)
+
+                cv2.rectangle(frame, (bbox[0], bbox[1]), (bbox[2], bbox[3]), color, 2)
+                cv2.putText(frame,
+                            f"ID: {target.id} AGE: {target.age} LOST: {target.lost_frames}",
+                            (bbox[0], bbox[1] - 10),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.9, color, 2)
+
+                if len(target.diff_list) > 1:
+                    avg_diff = np.mean(target.diff_list, axis=0)
+                    diff_text = f"Avg. Diff: ({avg_diff[0]:.2f}, {avg_diff[1]:.2f})"
+                    cv2.putText(frame, diff_text, (bbox[0], bbox[1] - 30), cv2.FONT_HERSHEY_SIMPLEX, 0.9, color,
+                                2)
 
         cv2.imshow(name_window, frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):

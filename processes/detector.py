@@ -5,7 +5,7 @@ from cores.fire_detector import FireDetector, FireDetectorNight
 
 
 def process_detector_night(queue, queue_res, event):
-    gray_frame_detector = FireDetectorNight()
+    fire_detector_night = FireDetectorNight()
 
     while not event.is_set():
         latest_item = None
@@ -23,10 +23,10 @@ def process_detector_night(queue, queue_res, event):
 
         logging.info(f'Detector idx_frame --> {idx_frame}')
 
-        max_contour = gray_frame_detector.find_max_contour(frame)
+        fire_detector_night.update(frame)
 
         # Add detection results to the output
-        queue_res.put((idx_frame, max_contour))
+        queue_res.put((idx_frame, fire_detector_night.targets))
 
     logging.info('Processing loop exited gracefully.')
 
