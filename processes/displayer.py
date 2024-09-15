@@ -75,24 +75,22 @@ def process_displayer_night(queue, queue_res, event):
             for target in targets:
                 th_age = 12
                 bbox = target.bbox
-                cls = target.cls  # Accessing cls from Target dataclass
                 age = target.age  # Accessing age from Target dataclass
-                if age > th_age:
+                avg_area_diff = np.mean(target.area_diff_list[-th_age:]) / target.area_list[-1]
+
+                if age > th_age and avg_area_diff > 0.3:
                     color = (0, 0, 255)
                 else:
-                    color = (0, 255, 255)
+                    color = (0, 255, 0)
 
                 cv2.rectangle(frame, (bbox[0], bbox[1]), (bbox[2], bbox[3]), color, 2)
                 cv2.putText(frame,
                             f"ID: {target.id} AGE: {target.age} LOST: {target.lost_frames}",
-                            (bbox[0], bbox[1] - 10),
+                            (bbox[0], bbox[1] + 32),
                             cv2.FONT_HERSHEY_SIMPLEX, 0.9, color, 2)
 
-                if len(target.diff_list) > 1:
-                    avg_diff = np.mean(target.diff_list, axis=0)
-                    diff_text = f"Avg. Diff: ({avg_diff[0]:.2f}, {avg_diff[1]:.2f})"
-                    cv2.putText(frame, diff_text, (bbox[0], bbox[1] - 30), cv2.FONT_HERSHEY_SIMPLEX, 0.9, color,
-                                2)
+                area_diff_text = f"Avg. Area Diff: {avg_area_diff:.2f}"
+                cv2.putText(frame, area_diff_text, (bbox[0], bbox[1] + 64), cv2.FONT_HERSHEY_SIMPLEX, 0.9, color, 2)
 
         cv2.imshow(name_window, frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):

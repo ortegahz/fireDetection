@@ -18,14 +18,23 @@ class Target:
     conf_list: list = field(default_factory=list)
     diff_list: list = field(default_factory=list)
     center_list: list = field(default_factory=list)
+    area_list: list = field(default_factory=list)
+    area_diff_list: list = field(default_factory=list)
 
 
 class FireDetectorNight:
     def __init__(self):
         self.targets = []
         self.next_id = 0
-        self.iou_threshold = 0.1
+        self.iou_threshold = 0.3
         self.max_lost_frames = 5
+
+    def find_filtered_contours(self, frame):
+        frame_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        _, thresh = cv2.threshold(frame_gray, 200, 255, cv2.THRESH_BINARY)
+        contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        filtered_contours = [contour for contour in contours if cv2.contourArea(contour) >= 4096 * 4]
+        return filtered_contours
 
     def find_max_contour(self, frame):
         frame_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -37,13 +46,14 @@ class FireDetectorNight:
             return None
 
     def update(self, frame):
-        max_contour = self.find_max_contour(frame)
+        contours = self.find_filtered_contours(frame)
         matched = []
 
-        if max_contour is not None:
-            x, y, w, h = cv2.boundingRect(max_contour)
+        for contour in contours:
+            x, y, w, h = cv2.boundingRect(contour)
             bbox = [x, y, x + w, y + h]
             center = [(x + x + w) / 2, (y + y + h) / 2]
+            area = w * h
             best_iou = 0
             best_target = None
 
@@ -59,6 +69,13 @@ class FireDetectorNight:
                 best_target.age += 1
                 best_target.conf_list.append(1.0)  # Confidence is always 1.0 for detected contour
                 best_target.center_list.append(center)
+                best_target.area_list.append(area)
+                if len(best_target.area_list) > 1:
+                    area_diff = abs(area - best_target.area_list[-2])
+                    best_target.area_diff_list.append(area_diff)
+                else:
+                    best_target.area_diff_list.append(0)
+
                 if len(best_target.center_list) > 1:
                     diff = np.array(center) - np.array(best_target.center_list[-2])
                     best_target.diff_list.append(diff)
@@ -67,7 +84,8 @@ class FireDetectorNight:
                 matched.append(best_target)
             else:
                 new_target = Target(bbox=bbox, id=self.next_id, lost_frames=0, cls=0, age=1, conf_list=[1.0],
-                                    diff_list=[[0, 0]], center_list=[center])
+                                    diff_list=[[0, 0]], center_list=[center], area_list=[area],
+                                    area_diff_list=[0])
                 self.targets.append(new_target)
                 self.next_id += 1
 
@@ -76,6 +94,7 @@ class FireDetectorNight:
                 target.lost_frames += 1
                 target.conf_list.append(0.0)
                 target.diff_list.append([0, 0])
+                target.area_diff_list.append(0)  # 如果没有匹配，面积变化为0
 
         self.targets = [t for t in self.targets if t.lost_frames <= self.max_lost_frames]
 
