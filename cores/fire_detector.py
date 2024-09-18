@@ -26,7 +26,7 @@ class FireDetectorNight:
     def __init__(self):
         self.targets = []
         self.next_id = 0
-        self.iou_threshold = 0.3
+        self.iou_threshold = 0.1
         self.max_lost_frames = 5
 
     def find_filtered_contours(self, frame):

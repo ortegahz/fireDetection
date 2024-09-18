@@ -73,7 +73,7 @@ def process_displayer_night(queue, queue_res, event):
 
         if idx_frame_res == idx_frame and targets is not None:
             for target in targets:
-                th_age = 12
+                th_age = 8
                 bbox = target.bbox
                 age = target.age  # Accessing age from Target dataclass
                 avg_area_diff = np.mean(target.area_diff_list[-th_age:]) / target.area_list[-1]

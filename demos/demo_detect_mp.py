@@ -14,7 +14,7 @@ def parse_args():
     # parser.add_argument('--path_video',
     #                     default='/home/manu/tmp/正例/26408a05b9b34fe26ca386d1e14bbe33.mp4')
     parser.add_argument('--path_video',
-                        default='/home/manu/mnt/ST8000DM004-2U91/jade_raw_data/03数据标注/01 数据采集/黑夜火正返例/1_0_2a6fb01172d1b3330d96c0918d223479.mp4')
+                        default='/home/manu/tmp/黑夜火正返例/1_0_4e597a9c2fac73cd5fa1558d3fe27d71.mp4')
     parser.add_argument('--source',
                         default='/home/manu/tmp/1/01 数据采集_bosch数据采集_博世数据_博世数据采集20240614_huo-shinei_huo-4mm-10m-0_frame_000000.jpg')
     parser.add_argument('--yolo_root', default='/media/manu/ST2000DM005-2U91/workspace/yolov9/')
@@ -28,7 +28,7 @@ def parse_args():
     parser.add_argument('--nosave', default=True, help='do not save images/videos')
     parser.add_argument('--ret-res', default=True)
     parser.add_argument('--save-conf', default=True, help='save confidences in --save-txt labels')
-    parser.add_argument('--alg_night', default=True)
+    parser.add_argument('--alg_night', default=False)
     return parser.parse_args()
 
 
