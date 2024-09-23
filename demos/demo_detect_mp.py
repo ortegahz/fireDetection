@@ -1,6 +1,7 @@
 import argparse
 import logging
 import time
+from fileinput import filename
 from multiprocessing import Process, Queue, Event
 
 from processes.decoder import process_decoder
@@ -14,15 +15,15 @@ def parse_args():
     # parser.add_argument('--path_video',
     #                     default='/home/manu/tmp/正例/26408a05b9b34fe26ca386d1e14bbe33.mp4')
     parser.add_argument('--path_video',
-                        default='/home/manu/tmp/黑夜火正返例/1_0_4e597a9c2fac73cd5fa1558d3fe27d71.mp4')
+                        default=r'D:\isp\近-大火-vlc-record-2024-09-12-14h29m38s-rtsp___172.20.20.65_554_cam_realmonitor-.mp4')
     parser.add_argument('--source',
-                        default='/home/manu/tmp/1/01 数据采集_bosch数据采集_博世数据_博世数据采集20240614_huo-shinei_huo-4mm-10m-0_frame_000000.jpg')
-    parser.add_argument('--yolo_root', default='/media/manu/ST2000DM005-2U91/workspace/yolov9/')
+                        default=r'D:\yolov9\data\images\horses.jpg')
+    parser.add_argument('--yolo_root', default=r'D:\yolov9')
     parser.add_argument('--view-img', default=False, help='show results')
     parser.add_argument('--imgsz', type=int, default=1280, help='inference size h,w')
     parser.add_argument('--device', type=str, default='0', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
     parser.add_argument('--weights', type=str,
-                        default='/home/manu/mnt/8gpu_3090/test/runs/train/yolov9-s-fire-s1280_10/weights/last.pt')
+                        default=r'D:\yolov9-s-fire-s1280_10\weights\last.pt')
     parser.add_argument('--conf-thres', type=float, default=0.1, help='confidence threshold')
     parser.add_argument('--save-txt', default=False, help='save results to *.txt')
     parser.add_argument('--nosave', default=True, help='do not save images/videos')
@@ -74,6 +75,7 @@ def main():
     set_logging()
     args = parse_args()
     run(args)
+
 
 
 if __name__ == '__main__':

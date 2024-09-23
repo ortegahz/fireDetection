@@ -1,3 +1,7 @@
+# pip
+
+pip install -i https://mirrors.aliyun.com/pypi/simple/ opencv-python
+
 # infer
 
 screen python demos/demo_detect.py 

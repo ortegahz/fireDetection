@@ -52,7 +52,7 @@ def process_detector(args, queue, queue_res, event):
         res = fire_detector.infer_yolo(frame)
 
         # Update targets with detection results
-        detections = res.get('runs/detect/exp/labels/pseudo', [])
+        detections = res.get('runs\\detect\\exp\\labels\\pseudo', [])
         fire_detector.update(detections, frame)
 
         # Add target tracking results to the output
