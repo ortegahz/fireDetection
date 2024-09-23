@@ -38,4 +38,7 @@ def process_decoder(path_video, queue, event, buff_len=5, fps_scale=8):
             time.sleep(0.001)
         t_last = time.time()
 
+        if event.is_set():
+            break
+
     cap.release()

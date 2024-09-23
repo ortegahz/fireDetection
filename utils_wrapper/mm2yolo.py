@@ -14,7 +14,7 @@ from utils import set_logging, make_dirs
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--dir_root_in',
-                        default='/home/manu/tmp/fire_unlabeled/VOCdevkit/VOC2007/JPEGImages/')
+                        default='/media/manu/ST2000DM005-2U91/fire/pseudo/fire_unlabeled/VOCdevkit/VOC2007/JPEGImages/')
     parser.add_argument('--dir_root_out',
                         default='/home/manu/tmp/mm_results/')
     parser.add_argument('--dir_json',

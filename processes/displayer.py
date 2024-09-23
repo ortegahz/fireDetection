@@ -1,4 +1,5 @@
 import logging
+import os
 from queue import Empty
 
 import cv2
@@ -100,12 +101,15 @@ def process_displayer_night(queue, queue_res, event):
     cv2.destroyAllWindows()
 
 
-def process_displayer(queue, queue_res, event):
-    name_window = 'frame'
-    cv2.namedWindow(name_window, cv2.WINDOW_NORMAL)
-    cv2.resizeWindow(name_window, 960, 540)
+def process_displayer(queue, queue_res, event, video_path=None, show=True,
+                      save_root='/home/manu/tmp/fire_test_results'):
+    video_name = os.path.basename(video_path)
+    if show:
+        name_window = 'frame'
+        cv2.namedWindow(name_window, cv2.WINDOW_NORMAL)
+        cv2.resizeWindow(name_window, 960, 540)
 
-    idx_frame_res, det_res, targets = -1, None, []
+    idx_frame_res, det_res, targets, is_alarm = -1, None, [], False
     while True:
         tsp_frame, idx_frame, frame, fc = queue.get()
 
@@ -119,25 +123,27 @@ def process_displayer(queue, queue_res, event):
                 continue
 
         if idx_frame_res == idx_frame and det_res is not None:
-            # Extract detections from the result dictionary
             det_res = det_res.get('runs/detect/exp/labels/pseudo', [])
             # frame = draw_boxes(frame, det_res)
 
             th_age = 12
-            # Draw tracked targets
             for target in targets:
-                bbox = target.bbox  # Accessing bbox from Target dataclass
-                cls = target.cls  # Accessing cls from Target dataclass
-                age = target.age  # Accessing age from Target dataclass
+                bbox = target.bbox
+                cls = target.cls
+                age = target.age
                 avg_conf = sum(target.conf_list[-th_age:]) / th_age
                 avg_diff = sum(target.diff_list[-th_age:]) / th_age
 
                 if age > th_age and avg_conf > 0.5:
                     color = (0, 0, 255)
+                    is_alarm = True
+                    alarm_status = "ALARM" if is_alarm else "NO ALARM"
+                    with open(os.path.join(save_root, f'{video_name}.txt'), 'w') as f:
+                        f.write(f'{video_name} <{alarm_status}>\n')
+                    event.set()
                 else:
                     color = get_color_for_class(cls)
 
-                # Convert from relative coordinates to absolute coordinates
                 top_left_x = int(bbox[0] * frame.shape[1])
                 top_left_y = int(bbox[1] * frame.shape[0])
                 bottom_right_x = int(bbox[2] * frame.shape[1])
@@ -145,13 +151,20 @@ def process_displayer(queue, queue_res, event):
 
                 cv2.rectangle(frame, (top_left_x, top_left_y), (bottom_right_x, bottom_right_y), color, 2)
                 cv2.putText(frame,
-                            f"ID: {target.id} CLS: {int(cls)} AGE: {age} CONF: {avg_conf:.2f} DIFF: {avg_diff:.2f}",
+                            f"I{target.id} A{age} C{avg_conf:.2f} D{avg_diff:.2f}",
                             (top_left_x, top_left_y - 10),
                             cv2.FONT_HERSHEY_SIMPLEX, 0.9, color, 2)
 
-        cv2.imshow(name_window, frame)
+        alarm_status = "ALARM" if is_alarm else "NO ALARM"
+        with open(os.path.join(save_root, f'{video_name}.txt'), 'w') as f:
+            f.write(f'{video_name} <{alarm_status}>\n')
+
+        if show:
+            cv2.imshow(name_window, frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             event.set()
+            break
+        if event.is_set():
             break
 
     cv2.destroyAllWindows()
