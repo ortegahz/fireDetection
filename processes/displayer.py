@@ -101,7 +101,7 @@ def process_displayer_night(queue, queue_res, event):
     cv2.destroyAllWindows()
 
 
-def process_displayer(queue, queue_res, event, video_path=None, show=True,
+def process_displayer(queue, queue_res, event, video_path='/media/manu/ST2000DM005-2U91/fire/test/V3/negative/nofire (1).mp4', show=True,
                       save_root='/home/manu/tmp/fire_test_results'):
     video_name = os.path.basename(video_path)
     if show:

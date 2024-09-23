@@ -14,7 +14,7 @@ def parse_args():
     # parser.add_argument('--path_video',
     #                     default='/home/manu/tmp/正例/26408a05b9b34fe26ca386d1e14bbe33.mp4')
     parser.add_argument('--path_video',
-                        default='/media/manu/ST2000DM005-2U91/fire/test/V3/negative/nofire (166).mp4')
+                        default='/media/manu/ST2000DM005-2U91/fire/test/V3/negative/nofire (10).mp4')
     parser.add_argument('--source',
                         default='/media/manu/ST2000DM005-2U91/workspace/yolov9/figure/horses_prediction.jpg')
     parser.add_argument('--yolo_root', default='/media/manu/ST2000DM005-2U91/workspace/yolov9/')
