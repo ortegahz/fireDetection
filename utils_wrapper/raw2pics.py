@@ -11,8 +11,8 @@ from utils import set_logging, make_dirs
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--dir_root_in', default='/media/manu/ST8000DM004-2U91/jade_raw_data/03数据标注/')
-    parser.add_argument('--dir_root_out', default='/media/manu/ST8000DM004-2U91/jade_raw_data/03数据标注-samples/')
+    parser.add_argument('--dir_root_in', default='/run/user/1000/gvfs/smb-share:server=172.20.254.27,share=青鸟消防智慧可视化02/03数据标注/')
+    parser.add_argument('--dir_root_out', default='/media/manu/ST8000DM004-2U91/jb_raw/03数据标注-samples/')
     parser.add_argument('--sample_interval', default=8, type=int)
     parser.add_argument('--image_sample_interval', default=1, type=int)
     return parser.parse_args()
