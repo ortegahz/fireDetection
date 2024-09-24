@@ -12,7 +12,7 @@ def parse_args():
                         default='/home/Huangzhe/test/fire')
     parser.add_argument('--dir_root_out',
                         default='/home/Huangzhe/test/fire')
-    parser.add_argument('--subset', default='pseudo')
+    parser.add_argument('--subset', default='train')
     return parser.parse_args()
 
 

@@ -20,6 +20,7 @@ class Target:
     center_list: list = field(default_factory=list)
     area_list: list = field(default_factory=list)
     area_diff_list: list = field(default_factory=list)
+    mask_avg_list: list = field(default_factory=list)
 
 
 class FireDetectorNight:
@@ -94,7 +95,8 @@ class FireDetectorNight:
                 target.lost_frames += 1
                 target.conf_list.append(0.0)
                 target.diff_list.append([0, 0])
-                target.area_diff_list.append(0)  # 如果没有匹配，面积变化为0
+                target.area_diff_list.append(0)
+                target.mask_avg_list.append(0)
 
         self.targets = [t for t in self.targets if t.lost_frames <= self.max_lost_frames]
 
@@ -121,6 +123,7 @@ class FireDetector:
         self.iou_threshold = 0.1
         self.max_lost_frames = 5
         self.previous_frame = None
+        self.fgbg = cv2.createBackgroundSubtractorMOG2()
 
     def infer_yolo(self, img):
         original_cwd = os.getcwd()
@@ -147,6 +150,9 @@ class FireDetector:
             detections: List of detected bounding boxes in the format [x1, y1, x2, y2].
             frame: The current frame for calculating patch differences.
         """
+        # Apply background subtraction
+        fgmask = self.fgbg.apply(frame)
+
         matched = []
         frame_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         for det in detections:
@@ -180,10 +186,22 @@ class FireDetector:
                 diff = self._calculate_frame_difference(self.previous_frame, frame_gray, best_target.bbox, frame.shape)
                 best_target.diff_list.append(diff)
 
+                # Calculate mask average for the current target
+                mask_avg = self._calculate_mask_avg(fgmask, best_target.bbox, frame.shape)
+                best_target.mask_avg_list.append(mask_avg)
+
                 matched.append(best_target)
             else:
-                new_target = Target(bbox=bbox, id=self.next_id, lost_frames=0, cls=cls, age=1, conf_list=[conf],
-                                    diff_list=[0.0])
+                new_target = Target(
+                    bbox=bbox,
+                    id=self.next_id,
+                    lost_frames=0,
+                    cls=cls,
+                    age=1,
+                    conf_list=[conf],
+                    diff_list=[0.0],
+                    mask_avg_list=[self._calculate_mask_avg(fgmask, bbox, frame.shape)]
+                )
                 self.targets.append(new_target)
                 self.next_id += 1
 
@@ -194,22 +212,14 @@ class FireDetector:
                 diff = self._calculate_frame_difference(self.previous_frame, frame_gray, target.bbox, frame.shape)
                 target.diff_list.append(diff)
 
+                # Calculate mask average for the current target
+                mask_avg = self._calculate_mask_avg(fgmask, target.bbox, frame.shape)
+                target.mask_avg_list.append(mask_avg)
+
         self.targets = [t for t in self.targets if t.lost_frames <= self.max_lost_frames]
         self.previous_frame = frame_gray
 
     def _calculate_frame_difference(self, prev_frame, curr_frame, bbox, frame_shape):
-        """
-        Calculate the frame difference for a given bounding box.
-
-        Args:
-            prev_frame: The previous frame.
-            curr_frame: The current frame.
-            bbox: The bounding box in normalized coordinates.
-            frame_shape: The shape of the frame.
-
-        Returns:
-            The mean absolute difference between the patches in the previous and current frames.
-        """
         if prev_frame is None:
             return 0.0
         prev_patch = self._extract_patch(prev_frame, bbox, frame_shape)
@@ -218,6 +228,23 @@ class FireDetector:
             return np.mean(np.abs(curr_patch - prev_patch))
         else:
             return 0.0
+
+    @staticmethod
+    def _calculate_mask_avg(mask, bbox, frame_shape):
+        height, width = frame_shape[:2]
+        x1, y1, x2, y2 = bbox
+        x1 = int(x1 * width)
+        y1 = int(y1 * height)
+        x2 = int(x2 * width)
+        y2 = int(y2 * height)
+        if x1 < 0 or y1 < 0 or x2 > width or y2 > height:
+            return 0
+        patch = mask[y1:y2, x1:x2]
+        if patch.size == 0:
+            return 0
+        mask_sum = np.sum(patch) / 255  # Divide by 255 to count white pixels
+        area = (x2 - x1) * (y2 - y1)  # Calculate the area of the patch
+        return mask_sum / area  # Calculate the average mask value
 
     @staticmethod
     def _extract_patch(frame, bbox, frame_shape):

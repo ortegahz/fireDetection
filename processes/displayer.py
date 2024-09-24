@@ -7,42 +7,35 @@ import numpy as np
 
 
 def get_color_for_class(cls):
-    # Define a mapping from class ID to color
     color_map = {
-        0: (0, 255, 255),  # Green for class 0
+        0: (128, 255, 128),  # Green for class 0
         1: (255, 255, 0),  # Blue for class 1
         2: (255, 0, 255),  # Red for class 2
     }
-    # Default to white if the class is not in the map
     return color_map.get(int(cls), (255, 255, 255))
 
 
 def draw_boxes(frame, detections):
     height, width, _ = frame.shape
     for label in detections:
-        # Parse the label
         if len(label.split()) == 6:
             cls, center_x, center_y, box_w, box_h, conf = map(float, label.split())
         else:
             cls, center_x, center_y, box_w, box_h = map(float, label.split())
             conf = None
 
-        # Convert from relative coordinates to absolute coordinates
         center_x *= width
         center_y *= height
         box_w *= width
         box_h *= height
 
-        # Calculate the top-left and bottom-right coordinates
         top_left_x = int(center_x - box_w / 2)
         top_left_y = int(center_y - box_h / 2)
         bottom_right_x = int(center_x + box_w / 2)
         bottom_right_y = int(center_y + box_h / 2)
 
-        # Get color for the class
         color = get_color_for_class(cls)
 
-        # Draw the rectangle and the label
         cv2.rectangle(frame, (top_left_x, top_left_y), (bottom_right_x, bottom_right_y), color, 2)
         label_text = f"{int(cls)}"
         if conf is not None:
@@ -76,7 +69,7 @@ def process_displayer_night(queue, queue_res, event):
             for target in targets:
                 th_age = 8
                 bbox = target.bbox
-                age = target.age  # Accessing age from Target dataclass
+                age = target.age
                 avg_area_diff = np.mean(target.area_diff_list[-th_age:]) / target.area_list[-1]
 
                 if age > th_age and avg_area_diff > 0.3:
@@ -101,7 +94,8 @@ def process_displayer_night(queue, queue_res, event):
     cv2.destroyAllWindows()
 
 
-def process_displayer(queue, queue_res, event, video_path='/media/manu/ST2000DM005-2U91/fire/test/V3/negative/nofire (1).mp4', show=True,
+def process_displayer(queue, queue_res, event,
+                      video_path='/media/manu/ST2000DM005-2U91/fire/test/V3/negative/nofire (4096).mp4', show=True,
                       save_root='/home/manu/tmp/fire_test_results'):
     video_name = os.path.basename(video_path)
     if show:
@@ -115,7 +109,7 @@ def process_displayer(queue, queue_res, event, video_path='/media/manu/ST2000DM0
 
         logging.info(f'displayer idx_frame --> {idx_frame}')
 
-        while idx_frame_res < idx_frame:  # TODO
+        while idx_frame_res < idx_frame:
             try:
                 idx_frame_res, det_res, targets = queue_res.get_nowait()
                 logging.info(f'displayer idx_frame_res --> {idx_frame_res}')
@@ -126,15 +120,16 @@ def process_displayer(queue, queue_res, event, video_path='/media/manu/ST2000DM0
             det_res = det_res.get('runs/detect/exp/labels/pseudo', [])
             # frame = draw_boxes(frame, det_res)
 
-            th_age = 12
+            th_age = 8
             for target in targets:
                 bbox = target.bbox
                 cls = target.cls
                 age = target.age
                 avg_conf = sum(target.conf_list[-th_age:]) / th_age
-                avg_diff = sum(target.diff_list[-th_age:]) / th_age
+                # avg_diff = sum(target.diff_list[-th_age:]) / th_age
+                mask_avg = sum(target.mask_avg_list[-th_age:]) / th_age
 
-                if age > th_age and avg_conf > 0.5:
+                if age > th_age and avg_conf > 0.5 and mask_avg > 0.3:
                     color = (0, 0, 255)
                     is_alarm = True
                     alarm_status = "ALARM" if is_alarm else "NO ALARM"
@@ -151,8 +146,8 @@ def process_displayer(queue, queue_res, event, video_path='/media/manu/ST2000DM0
 
                 cv2.rectangle(frame, (top_left_x, top_left_y), (bottom_right_x, bottom_right_y), color, 2)
                 cv2.putText(frame,
-                            f"I{target.id} A{age} C{avg_conf:.2f} D{avg_diff:.2f}",
-                            (top_left_x, top_left_y - 10),
+                            f"I{target.id} A{age} C{avg_conf:.2f} M{mask_avg:.2f}",
+                            (top_left_x, top_left_y + 32),
                             cv2.FONT_HERSHEY_SIMPLEX, 0.9, color, 2)
 
         alarm_status = "ALARM" if is_alarm else "NO ALARM"

@@ -12,9 +12,9 @@ from utils_wrapper.utils import set_logging
 def parse_args():
     parser = argparse.ArgumentParser()
     # parser.add_argument('--path_video',
-    #                     default='/home/manu/tmp/正例/26408a05b9b34fe26ca386d1e14bbe33.mp4')
+    #                     default='/media/manu/ST2000DM005-2U91/fire/test/V3/positive/fire (1).mp4')
     parser.add_argument('--path_video',
-                        default='/media/manu/ST2000DM005-2U91/fire/test/V3/negative/nofire (10).mp4')
+                        default='/media/manu/ST2000DM005-2U91/fire/test/V3/negative/nofire (95).mp4')
     parser.add_argument('--source',
                         default='/media/manu/ST2000DM005-2U91/workspace/yolov9/figure/horses_prediction.jpg')
     parser.add_argument('--yolo_root', default='/media/manu/ST2000DM005-2U91/workspace/yolov9/')
