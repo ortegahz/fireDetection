@@ -11,6 +11,7 @@ import numpy as np
 @dataclass
 class Target:
     bbox: list = field(default_factory=list)
+    bbox_list: list = field(default_factory=list)
     id: int = 0
     lost_frames: int = 0
     cls: float = 0.0
@@ -66,6 +67,7 @@ class FireDetectorNight:
 
             if best_iou > self.iou_threshold:
                 best_target.bbox = bbox
+                best_target.bbox_list.append(bbox)  # Append bbox to bbox_list
                 best_target.lost_frames = 0
                 best_target.age += 1
                 best_target.conf_list.append(1.0)  # Confidence is always 1.0 for detected contour
@@ -79,14 +81,24 @@ class FireDetectorNight:
 
                 if len(best_target.center_list) > 1:
                     diff = np.array(center) - np.array(best_target.center_list[-2])
-                    best_target.diff_list.append(diff)
+                    best_target.diff_list.append(diff.tolist())  # Convert array to list
                 else:
                     best_target.diff_list.append([0, 0])
                 matched.append(best_target)
             else:
-                new_target = Target(bbox=bbox, id=self.next_id, lost_frames=0, cls=0, age=1, conf_list=[1.0],
-                                    diff_list=[[0, 0]], center_list=[center], area_list=[area],
-                                    area_diff_list=[0])
+                new_target = Target(
+                    bbox=bbox,
+                    bbox_list=[bbox],  # Initialize bbox_list with the current bbox
+                    id=self.next_id,
+                    lost_frames=0,
+                    cls=0,
+                    age=1,
+                    conf_list=[1.0],
+                    diff_list=[[0, 0]],
+                    center_list=[center],
+                    area_list=[area],
+                    area_diff_list=[0]
+                )
                 self.targets.append(new_target)
                 self.next_id += 1
 
@@ -97,6 +109,7 @@ class FireDetectorNight:
                 target.diff_list.append([0, 0])
                 target.area_diff_list.append(0)
                 target.mask_avg_list.append(0)
+                target.bbox_list.append(target.bbox)  # Ensure bbox_list is updated
 
         self.targets = [t for t in self.targets if t.lost_frames <= self.max_lost_frames]
 
@@ -179,6 +192,7 @@ class FireDetector:
 
             if best_iou > self.iou_threshold:
                 best_target.bbox = bbox
+                best_target.bbox_list.append(bbox)  # Append bbox to bbox_list
                 best_target.lost_frames = 0
                 best_target.age += 1
                 best_target.conf_list.append(conf)
@@ -194,6 +208,7 @@ class FireDetector:
             else:
                 new_target = Target(
                     bbox=bbox,
+                    bbox_list=[bbox],  # Initialize bbox_list with the current bbox
                     id=self.next_id,
                     lost_frames=0,
                     cls=cls,
@@ -208,13 +223,14 @@ class FireDetector:
         for target in self.targets:
             if target not in matched:
                 target.lost_frames += 1
-                target.conf_list.append(0.0)
+                target.conf_list.append(-1.0)
                 diff = self._calculate_frame_difference(self.previous_frame, frame_gray, target.bbox, frame.shape)
                 target.diff_list.append(diff)
 
                 # Calculate mask average for the current target
                 mask_avg = self._calculate_mask_avg(fgmask, target.bbox, frame.shape)
                 target.mask_avg_list.append(mask_avg)
+                target.bbox_list.append(target.bbox)  # Ensure bbox_list is updated
 
         self.targets = [t for t in self.targets if t.lost_frames <= self.max_lost_frames]
         self.previous_frame = frame_gray

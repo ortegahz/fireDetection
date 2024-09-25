@@ -39,6 +39,9 @@ def process_decoder(path_video, queue, event, buff_len=5, fps_scale=8):
         t_last = time.time()
 
         if event.is_set():
+            queue.put([tsp_frame, idx_frame, None, fc])
             break
 
     cap.release()
+
+    logging.info('decoder processing loop exited gracefully.')

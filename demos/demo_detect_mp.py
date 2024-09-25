@@ -12,9 +12,11 @@ from utils_wrapper.utils import set_logging
 def parse_args():
     parser = argparse.ArgumentParser()
     # parser.add_argument('--path_video',
-    #                     default='/media/manu/ST2000DM005-2U91/fire/test/V3/positive/fire (1).mp4')
+    #                     default='/media/manu/ST2000DM005-2U91/fire/data/20240806/BOSH-FM数据采集/zheng-shinei/Z-D-170m-3.mp4')
     parser.add_argument('--path_video',
-                        default='/media/manu/ST2000DM005-2U91/fire/test/V3/negative/nofire (176).mp4')
+                        default='/media/manu/ST2000DM005-2U91/fire/test/V3/positive/fire (140).mp4')
+    # parser.add_argument('--path_video',
+    #                     default='/media/manu/ST2000DM005-2U91/fire/test/V3/negative/nofire (95).mp4')
     parser.add_argument('--source',
                         default='/media/manu/ST2000DM005-2U91/workspace/yolov9/figure/horses_prediction.jpg')
     parser.add_argument('--yolo_root', default='/media/manu/ST2000DM005-2U91/workspace/yolov9/')
@@ -68,6 +70,8 @@ def run(args):
             break
         q_detector.put(item_frame)
         q_displayer.put(item_frame)
+
+    logging.info('main processing loop exited gracefully.')
 
 
 def main():

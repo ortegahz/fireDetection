@@ -58,4 +58,4 @@ def process_detector(args, queue, queue_res, event):
         # Add target tracking results to the output
         queue_res.put((idx_frame, res, fire_detector.targets))
 
-    logging.info('Processing loop exited gracefully.')
+    logging.info('detector processing loop exited gracefully.')
