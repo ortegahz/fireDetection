@@ -62,67 +62,11 @@ def calculate_normalized_distance(initial_bbox, current_bbox, frame_shape):
     return normalized_distance
 
 
-def process_displayer_night(queue, queue_res, event):
-    name_window = 'frame'
-    cv2.namedWindow(name_window, cv2.WINDOW_NORMAL)
-    cv2.resizeWindow(name_window, 960, 540)
-
-    idx_frame_res, targets = -1, []
-    while True:
-        tsp_frame, idx_frame, frame, fc = queue.get()
-
-        if idx_frame > fc - 8:
-            break
-
-        logging.info(f'displayer idx_frame --> {idx_frame}')
-
-        while idx_frame_res < idx_frame:
-            try:
-                idx_frame_res, targets = queue_res.get_nowait()
-                logging.info(f'displayer idx_frame_res --> {idx_frame_res}')
-            except Empty:
-                continue
-
-        if idx_frame_res == idx_frame and targets is not None:
-            for target in targets:
-                th_age = 8
-                bbox = target.bbox
-                age = target.age
-                avg_area_diff = np.mean(target.area_diff_list[-th_age:]) / target.area_list[-1]
-
-                if age > th_age and avg_area_diff > 0.3:
-                    color = (0, 0, 255)
-                else:
-                    color = (0, 255, 0)
-
-                cv2.rectangle(frame, (bbox[0], bbox[1]), (bbox[2], bbox[3]), color, 2)
-                cv2.putText(frame,
-                            f"ID: {target.id} AGE: {target.age} LOST: {target.lost_frames}",
-                            (bbox[0], bbox[1] + 32),
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.9, color, 2)
-
-                area_diff_text = f"Avg. Area Diff: {avg_area_diff:.2f}"
-                cv2.putText(frame, area_diff_text, (bbox[0], bbox[1] + 64), cv2.FONT_HERSHEY_SIMPLEX, 0.9, color, 2)
-
-                # Draw the trajectory using the stored positions in bbox_list
-                for i in range(1, len(target.bbox_list)):
-                    prev_bbox = target.bbox_list[i - 1]
-                    curr_bbox = target.bbox_list[i]
-                    prev_center = (int((prev_bbox[0] + prev_bbox[2]) / 2), int((prev_bbox[1] + prev_bbox[3]) / 2))
-                    curr_center = (int((curr_bbox[0] + curr_bbox[2]) / 2), int((curr_bbox[1] + curr_bbox[3]) / 2))
-                    cv2.line(frame, prev_center, curr_center, color, 2)
-
-                # Calculate the normalized distance
-                normalized_distance = calculate_normalized_distance(target.bbox_list[0], bbox, frame.shape)
-                distance_text = f"Norm Dist: {normalized_distance:.2f}"
-                cv2.putText(frame, distance_text, (bbox[0], bbox[1] - 20), cv2.FONT_HERSHEY_SIMPLEX, 0.9, color, 2)
-
-        cv2.imshow(name_window, frame)
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            event.set()
-            break
-
-    cv2.destroyAllWindows()
+def calculate_avg_area_diff(target, th_age):
+    if len(target.area_list) < th_age + 1:
+        return 0.0
+    diffs = [abs(target.area_list[i] - target.area_list[i - 1]) for i in range(-th_age, 0)]
+    return sum(diffs) / len(diffs)
 
 
 def process_displayer(queue, queue_res, event,
@@ -156,9 +100,12 @@ def process_displayer(queue, queue_res, event,
                 bbox = target.bbox
                 cls = target.cls
                 age = target.age
+                area = target.area_list[-1]
                 avg_conf = sum(target.conf_list[-th_age:]) / th_age
-                # avg_diff = sum(target.diff_list[-th_age:]) / th_age
+                avg_diff = sum(target.diff_list[-th_age:]) / th_age
                 mask_avg = sum(target.mask_avg_list[-th_age:]) / th_age
+                avg_area_diff = sum(target.area_diff_list[-th_age:]) / th_age / area if age > th_age else 0.0
+                avg_area_diff_text = f"Avg Area Diff: {avg_area_diff:.2f}"
 
                 top_left_x = int(bbox[0] * frame.shape[1])
                 top_left_y = int(bbox[1] * frame.shape[0])
@@ -167,29 +114,31 @@ def process_displayer(queue, queue_res, event,
 
                 # Calculate the normalized distance
                 normalized_distance = \
-                    calculate_normalized_distance(target.bbox_list[-th_age], bbox, frame.shape) * 16 if th_age < age else 0.0
+                    calculate_normalized_distance(target.bbox_list[-th_age], bbox,
+                                                  frame.shape) * 16 if th_age < age else 0.0
+
                 distance_text = f"Norm Dist: {normalized_distance:.2f}"
 
-                # if th_age < age and avg_conf > 0.5 and mask_avg > 0.3 and normalized_distance < 0.5:  # noqa
-                if th_age < age and avg_conf > 0.5 and mask_avg > 0.2:  # noqa
-                    # if th_age < age and avg_conf > 0.5:
+                # Calculate current bounding box area
+                current_area = (bottom_right_x - top_left_x) * (bottom_right_y - top_left_y)
+                # Normalize avg_diff using the current area
+                normalized_avg_diff = avg_diff / current_area if current_area > 0 else 0.0
+
+                if (th_age < age and avg_conf > 0.5 and
+                        (normalized_avg_diff > 0.03 or avg_area_diff > 0.2)):  # noqa
                     color = (0, 0, 255)
                     is_alarm = True
                     print(f'is_alarm --> {is_alarm}')
                     alarm_status = "ALARM" if is_alarm else "NO ALARM"
                     with open(os.path.join(save_root, f'{video_name}.txt'), 'w') as f:
                         f.write(f'{video_name} <{alarm_status}>\n')
-                    # event.set()
                 else:
                     color = get_color_for_class(cls)
 
                 cv2.rectangle(frame, (top_left_x, top_left_y), (bottom_right_x, bottom_right_y), color, 2)
                 cv2.putText(frame,
-                            f"I{target.id} A{age} C{avg_conf:.2f} M{mask_avg:.2f}",
+                            f"I{target.id} A{age} C{avg_conf:.2f} D{normalized_avg_diff:.2f} S{avg_area_diff:.2f}",
                             (top_left_x, top_left_y + 32),
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.9, color, 2)
-
-                cv2.putText(frame, distance_text, (top_left_x, top_left_y + 64),
                             cv2.FONT_HERSHEY_SIMPLEX, 0.9, color, 2)
 
                 # Draw the trajectory using the stored positions in bbox_list
