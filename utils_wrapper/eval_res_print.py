@@ -11,7 +11,7 @@ def read_and_print_txt_files(folder_path, output_path):
             file_path = os.path.join(folder_path, txt_file)
             with open(file_path, 'r', encoding='utf-8') as file:
                 for line in file:
-                    if '<NO ALARM>' in line:
+                    if '<NO ALARM>' not in line:
                         print(line.strip())
                         output_file.write(line.strip() + '\n')
                         _cnt += 1
@@ -21,6 +21,6 @@ def read_and_print_txt_files(folder_path, output_path):
         output_file.write(f'_cnt --> {_cnt} in {len(txt_files)}\n')
 
 
-folder_path = '/home/manu/tmp/fire_test_results_fire_v1'
+folder_path = '/home/manu/tmp/fire_test_results'
 output_path = '/home/manu/tmp/fire_test_results.txt'
 read_and_print_txt_files(folder_path, output_path)

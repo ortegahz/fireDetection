@@ -24,7 +24,7 @@ def clear_queue(queue):
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--video_folder',
-                        default='/media/manu/ST2000DM005-2U91/fire/test/V3/positive/',
+                        default='/media/manu/ST2000DM005-2U91/fire/test/V3/negative/',
                         help='Path to the folder containing videos')
     parser.add_argument('--source',
                         default='/media/manu/ST2000DM005-2U91/workspace/yolov9/figure/horses_prediction.jpg')

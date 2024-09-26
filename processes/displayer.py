@@ -166,17 +166,20 @@ def process_displayer(queue, queue_res, event,
                 bottom_right_y = int(bbox[3] * frame.shape[0])
 
                 # Calculate the normalized distance
-                normalized_distance = calculate_normalized_distance(target.bbox_list[0], bbox, frame.shape) * 16
+                normalized_distance = \
+                    calculate_normalized_distance(target.bbox_list[-th_age], bbox, frame.shape) * 16 if th_age < age else 0.0
                 distance_text = f"Norm Dist: {normalized_distance:.2f}"
 
-                if th_age < age < th_age * 16 and avg_conf > 0.5 and mask_avg > 0.3 and normalized_distance < 0.5:  # noqa
+                # if th_age < age and avg_conf > 0.5 and mask_avg > 0.3 and normalized_distance < 0.5:  # noqa
+                if th_age < age and avg_conf > 0.5 and mask_avg > 0.2:  # noqa
+                    # if th_age < age and avg_conf > 0.5:
                     color = (0, 0, 255)
                     is_alarm = True
                     print(f'is_alarm --> {is_alarm}')
                     alarm_status = "ALARM" if is_alarm else "NO ALARM"
                     with open(os.path.join(save_root, f'{video_name}.txt'), 'w') as f:
                         f.write(f'{video_name} <{alarm_status}>\n')
-                    event.set()
+                    # event.set()
                 else:
                     color = get_color_for_class(cls)
 
