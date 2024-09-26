@@ -8,9 +8,10 @@ from queue import Empty
 
 # import your processes and utils here
 from processes.decoder import process_decoder
-from processes.detector import process_detector_night, process_detector
-from processes.displayer import process_displayer_night, process_displayer
-from utils_wrapper.utils import set_logging, make_dirs
+from processes.detector import process_detector
+from processes.displayer import process_displayer
+from utils_wrapper.utils import make_dirs
+from utils_wrapper.utils import set_logging
 
 
 def clear_queue(queue):
@@ -24,7 +25,7 @@ def clear_queue(queue):
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--video_folder',
-                        default='/media/manu/ST2000DM005-2U91/fire/test/V3/negative/',
+                        default='/media/manu/ST2000DM005-2U91/fire/test/V3/positive/',
                         help='Path to the folder containing videos')
     parser.add_argument('--source',
                         default='/media/manu/ST2000DM005-2U91/workspace/yolov9/figure/horses_prediction.jpg')
@@ -58,56 +59,36 @@ def run(args, video_file):
 
     stop_event = Event()
 
-    if not args.alg_night:
-        q_detector = Queue()
-        q_detector_res = Queue()
-        p_detector = Process(target=process_detector, args=(args, q_detector, q_detector_res, stop_event), daemon=True)
-        p_detector.start()
-        time.sleep(3)  # wait for model init
+    q_detector = Queue()
+    q_detector_res = Queue()
+    p_detector = Process(target=process_detector, args=(args, q_detector, q_detector_res, stop_event), daemon=True)
+    p_detector.start()
+    time.sleep(3)  # wait for model init
 
-        q_displayer = Queue()
-        p_displayer = Process(
-            target=process_displayer,
-            args=(q_displayer, q_detector_res, stop_event, video_file, False, args.save_root),
-            daemon=True)
-        p_displayer.start()
-    else:
-        q_detector = Queue()
-        q_detector_res = Queue()
-        p_detector = Process(target=process_detector_night, args=(q_detector, q_detector_res, stop_event))
-        p_detector.start()
-
-        q_displayer = Queue()
-        p_displayer = Process(target=process_displayer_night, args=(q_displayer, q_detector_res, stop_event))
-        p_displayer.start()
+    q_displayer = Queue()
+    p_displayer = Process(
+        target=process_displayer,
+        args=(q_displayer, q_detector_res, stop_event, video_file, False, args.save_root),
+        daemon=True)
+    p_displayer.start()
 
     q_decoder = Queue()
     p_decoder = Process(target=process_decoder, args=(video_file, q_decoder, stop_event), daemon=True)
     p_decoder.start()
 
     while True:
-        try:
-            item_frame = q_decoder.get(timeout=1)
-        except Empty:
-            if stop_event.is_set():
-                break
-            continue
-
+        item_frame = q_decoder.get()
         tsp_frame, idx_frame, frame, fc = item_frame
         if frame is None or stop_event.is_set():
             break
         q_detector.put(item_frame)
         q_displayer.put(item_frame)
 
-    stop_event.set()
-    clear_queue(q_detector)
-    clear_queue(q_detector_res)
-    clear_queue(q_displayer)
-    clear_queue(q_decoder)
+    logging.info('main_multi processing loop exited gracefully.')
 
 
 def main():
-    # set_logging()
+    set_logging()
     args = parse_args()
     video_files = get_video_files(args.video_folder)
     make_dirs(args.save_root, reset=True)

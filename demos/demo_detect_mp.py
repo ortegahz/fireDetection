@@ -14,9 +14,9 @@ def parse_args():
     # parser.add_argument('--path_video',
     #                     default='/media/manu/ST2000DM005-2U91/fire/data/20240806/BOSH-FM数据采集/jiu-shinei/J-D-40m-002.mp4')
     # parser.add_argument('--path_video',
-    #                     default='/media/manu/ST2000DM005-2U91/fire/test/V3/positive/fire (148).mp4')
+    #                     default='/media/manu/ST2000DM005-2U91/fire/test/V3/positive/fire (1).mp4')
     parser.add_argument('--path_video',
-                        default='/media/manu/ST2000DM005-2U91/fire/test/V3/negative/nofire (30).mp4')
+                        default='/media/manu/ST2000DM005-2U91/fire/test/V3/negative/nofire (173).mp4')
     parser.add_argument('--source',
                         default='/media/manu/ST2000DM005-2U91/workspace/yolov9/figure/horses_prediction.jpg')
     parser.add_argument('--yolo_root', default='/media/manu/ST2000DM005-2U91/workspace/yolov9/')

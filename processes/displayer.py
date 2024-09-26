@@ -132,6 +132,7 @@ def process_displayer(queue, queue_res, event,
                     alarm_status = "ALARM" if is_alarm else "NO ALARM"
                     with open(os.path.join(save_root, f'{video_name}.txt'), 'w') as f:
                         f.write(f'{video_name} <{alarm_status}>\n')
+                    event.set()
                 else:
                     color = get_color_for_class(cls)
 
@@ -163,7 +164,8 @@ def process_displayer(queue, queue_res, event,
         if event.is_set():
             break
 
-    cv2.setWindowProperty(name_window, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_NORMAL)
-    cv2.destroyAllWindows()
+    if show:
+        cv2.setWindowProperty(name_window, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_NORMAL)
+        cv2.destroyAllWindows()
 
     logging.info('displayer processing loop exited gracefully.')
