@@ -91,6 +91,8 @@ def run(args):
         relative_path = os.path.dirname(relative_path)
         video_name = os.path.splitext(os.path.basename(video_path_in))[0]
         output_dir = os.path.join(args.dir_root_out, relative_path, video_name)
+        if len(output_dir) > 128:
+            continue
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
         extract_frames(video_path_in, output_dir, interval=args.sample_interval)
