@@ -66,10 +66,7 @@ def run(args, video_file):
     time.sleep(3)  # wait for model init
 
     q_displayer = Queue()
-    p_displayer = Process(
-        target=process_displayer,
-        args=(q_displayer, q_detector_res, stop_event, video_file, False, args.save_root),
-        daemon=True)
+
     p_displayer.start()
 
     q_decoder = Queue()
@@ -83,6 +80,10 @@ def run(args, video_file):
             break
         q_detector.put(item_frame)
         q_displayer.put(item_frame)
+
+    p_displayer.join()
+    p_decoder.join()
+    p_detector.join()
 
     logging.info('main_multi processing loop exited gracefully.')
 

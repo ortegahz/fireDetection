@@ -70,7 +70,7 @@ def calculate_avg_area_diff(target, th_age):
 
 
 def process_displayer(queue, queue_res, event,
-                      video_path='/media/manu/ST2000DM005-2U91/fire/test/V3/negative/nofire (4096).mp4', show=True,
+                      video_path='/media/manu/ST2000DM005-2U91/fire/test/V3/negative/nofire (4096).mp4', show=True                            ,
                       save_root='/home/manu/tmp/fire_test_results'):
     video_name = os.path.basename(video_path)
     if show:
@@ -84,7 +84,7 @@ def process_displayer(queue, queue_res, event,
 
         logging.info(f'displayer idx_frame --> {idx_frame}')
 
-        while idx_frame_res < idx_frame:
+        while idx_frame_res < idx_frame and not event.is_set():
             try:
                 idx_frame_res, det_res, targets = queue_res.get_nowait()
                 logging.info(f'displayer idx_frame_res --> {idx_frame_res}')
