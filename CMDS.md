@@ -1,6 +1,10 @@
 # infer
 
+export PYTHONPATH=$PYTHONPATH:$(pwd)
+
 screen python demos/demo_detect.py 
+
+python demos/demo_detect_mp.py --show True --save_root /home/manu/tmp/fire_test_results_single
 
 # data
 

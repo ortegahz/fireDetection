@@ -4,6 +4,9 @@ import os
 def read_and_print_txt_files(folder_path, output_path):
     files = os.listdir(folder_path)
     txt_files = [file for file in files if file.endswith('.txt')]
+
+    txt_files.sort(key=lambda file: os.path.getmtime(os.path.join(folder_path, file)))
+
     _cnt = 0
 
     with open(output_path, 'w', encoding='utf-8') as output_file:

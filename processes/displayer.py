@@ -70,7 +70,7 @@ def calculate_avg_area_diff(target, th_age):
 
 
 def process_displayer(queue, queue_res, event,
-                      video_path='/media/manu/ST2000DM005-2U91/fire/test/V3/negative/nofire (4096).mp4', show=True                            ,
+                      video_path='/media/manu/ST2000DM005-2U91/fire/test/V3/negative/nofire (4096).mp4', show=True,
                       save_root='/home/manu/tmp/fire_test_results'):
     video_name = os.path.basename(video_path)
     if show:
@@ -124,8 +124,8 @@ def process_displayer(queue, queue_res, event,
                 # Normalize avg_diff using the current area
                 normalized_avg_diff = avg_diff / current_area if current_area > 0 else 0.0
 
-                if (th_age < age and avg_conf > 0.5 and
-                        (normalized_avg_diff > 0.03 or avg_area_diff > 0.2)):  # noqa
+                # if th_age < age and avg_conf > 0.5 and (normalized_avg_diff > 0.03 or avg_area_diff > 0.2):  # noqa
+                if age > th_age and avg_conf > 0.5 and avg_area_diff > 0.2:
                     color = (0, 0, 255)
                     is_alarm = True
                     print(f'is_alarm --> {is_alarm}')

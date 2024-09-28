@@ -14,9 +14,9 @@ def parse_args():
     # parser.add_argument('--path_video',
     #                     default='/media/manu/ST2000DM005-2U91/fire/data/20240806/BOSH-FM数据采集/jiu-shinei/J-D-40m-002.mp4')
     parser.add_argument('--path_video',
-                        default='/media/manu/ST2000DM005-2U91/fire/test/V3/positive/fire (138).mp4')
+                        default='/media/manu/ST2000DM005-2U91/fire/test/V3/positive/fire (61).mp4')
     # parser.add_argument('--path_video',
-    #                     default='/media/manu/ST2000DM005-2U91/fire/test/V3/negative/nofire (173).mp4')
+    #                     default='/media/manu/ST2000DM005-2U91/fire/test/V3/negative/nofire (176).mp4')
     parser.add_argument('--source',
                         default='/media/manu/ST2000DM005-2U91/workspace/yolov9/figure/horses_prediction.jpg')
     parser.add_argument('--yolo_root', default='/media/manu/ST2000DM005-2U91/workspace/yolov9/')
@@ -32,6 +32,7 @@ def parse_args():
     parser.add_argument('--save-conf', default=True, help='save confidences in --save-txt labels')
     parser.add_argument('--alg_night', default=False)
     parser.add_argument('--save_root', type=str, default='/home/manu/tmp/fire_test_results')
+    parser.add_argument('--show', default=False)
     return parser.parse_args()
 
 
@@ -47,10 +48,9 @@ def run(args):
     time.sleep(3)  # wait for model init
 
     q_displayer = Queue()
-    # p_displayer = Process(target=process_displayer, args=(q_displayer, q_detector_res, stop_event), daemon=True)
     p_displayer = Process(
         target=process_displayer,
-        args=(q_displayer, q_detector_res, stop_event, args.path_video, False, args.save_root),
+        args=(q_displayer, q_detector_res, stop_event, args.path_video, args.show, args.save_root),
         daemon=True)
     p_displayer.start()
 
