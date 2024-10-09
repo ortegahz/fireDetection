@@ -13,11 +13,11 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--labels_dir_in', default='/home/manu/mnt/8gpu_3090/test/runs/fire/detect/labels/',
                         help='Input directory for label files')
-    parser.add_argument('--imgs_dir_in', default='/media/manu/ST8000DM004-2U91/jade_raw_data/03数据标注-samples-merge/',
+    parser.add_argument('--imgs_dir_in', default='/media/manu/ST8000DM004-2U91/jb_raw/03数据标注-samples-merge/',
                         help='Input directory for image files')
-    parser.add_argument('--labels_dir_out', default='/home/manu/tmp/samples_pick/labels',
+    parser.add_argument('--labels_dir_out', default='/home/manu/mnt/ST8000DM004-2U91/jb_raw/03数据标注-samples-merge-pick/labels',
                         help='Output directory for label files')
-    parser.add_argument('--imgs_dir_out', default='/home/manu/tmp/samples_pick/images',
+    parser.add_argument('--imgs_dir_out', default='/home/manu/mnt/ST8000DM004-2U91/jb_raw/03数据标注-samples-merge-pick/images',
                         help='Output directory for image files')
     parser.add_argument('--conf_threshold', type=float, nargs=2, default=[0.0, 1.0],
                         help='Confidence threshold for selecting images and labels')

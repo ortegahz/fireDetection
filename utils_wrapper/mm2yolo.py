@@ -14,14 +14,15 @@ from utils import set_logging, make_dirs
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--dir_root_in',
-                        default='/media/manu/ST2000DM005-2U91/fire/pseudo/fire_unlabeled/VOCdevkit/VOC2007/JPEGImages/')
+                        default='/home/manu/tmp/mm_filtered_res/imgs')
     parser.add_argument('--dir_root_out',
                         default='/home/manu/tmp/mm_results/')
     parser.add_argument('--dir_json',
-                        default='/home/manu/tmp/preds/')
+                        default='/home/manu/tmp/mm_filtered_res/labels')
     parser.add_argument('--score_threshold', type=float, default=0.3,
                         help='Score threshold for displaying bounding boxes')
-    parser.add_argument('--subset', default='pseudo', help='Subset name')
+    parser.add_argument('--subset', default='pseudof', help='Subset name')
+    parser.add_argument('--force_imgs_copy', default=True)
     return parser.parse_args()
 
 
@@ -76,6 +77,9 @@ def run(args):
         new_image_path = os.path.join(output_dir_images, new_image_name)
         json_path = os.path.join(json_dir, os.path.splitext(os.path.basename(image_path))[0] + '.json')
         new_label_path = os.path.join(output_dir_labels, os.path.splitext(new_image_name)[0] + '.txt')
+
+        if args.force_imgs_copy:
+            shutil.copy2(image_path, new_image_path)
 
         if os.path.exists(json_path):
             yolo_labels, cnt_valid = convert_bboxes_to_yolo(image_path, json_path, score_threshold=args.score_threshold)

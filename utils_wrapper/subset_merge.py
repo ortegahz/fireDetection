@@ -12,7 +12,7 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--base_dir', default='/home/Huangzhe/test/fire')
     parser.add_argument('--subset1', default='v7', help='Name of the first subset to merge')
-    parser.add_argument('--subset2', default='pseudo', help='Name of the second subset to merge')
+    parser.add_argument('--subset2', default='pseudof', help='Name of the second subset to merge')
     parser.add_argument('--output_subset', default='train', help='Name of the output merged subset')
     return parser.parse_args()
 
@@ -58,7 +58,8 @@ def merge_files(subset1, subset2, output_subset, base_dir):
     # Create output directories if they don't exist
     make_dirs(output_imgs_dir, reset=True)
     make_dirs(output_labels_dir, reset=True)
-    os.remove(output_list_file)
+    if os.path.exists(output_list_file):
+        os.remove(output_list_file)
 
     # Copy files from subset1
     copy_files_and_write_list(subset1_list_file, subset1_imgs_dir, subset1_labels_dir, output_imgs_dir,

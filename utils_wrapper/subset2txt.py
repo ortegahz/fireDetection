@@ -9,10 +9,10 @@ from utils import set_logging
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--dir_root_in',
-                        default='/home/Huangzhe/test/fire')
+                        default='/home/Huangzhe/test/smoke_three_classes_V1_20240820')
     parser.add_argument('--dir_root_out',
-                        default='/home/Huangzhe/test/fire')
-    parser.add_argument('--subset', default='train')
+                        default='/home/Huangzhe/test/smoke_three_classes_V1_20240820')
+    parser.add_argument('--subset', default='val')
     return parser.parse_args()
 
 
