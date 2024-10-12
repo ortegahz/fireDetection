@@ -32,7 +32,7 @@ def process_detector_night(queue, queue_res, event):
 
 
 def process_detector(args, queue, queue_res, event):
-    fire_detector = FireDetector(args)
+    _detector = FireDetector(args)
 
     while not event.is_set():
         latest_item = None
@@ -49,13 +49,13 @@ def process_detector(args, queue, queue_res, event):
         tsp_frame, idx_frame, frame, fc = latest_item
 
         logging.info(f'Detector idx_frame --> {idx_frame}')
-        res = fire_detector.infer_yolo(frame)
+        res = _detector.infer_yolo(frame)
 
         # Update targets with detection results
         detections = res.get('runs/detect/exp/labels/pseudo', [])
-        fire_detector.update(detections, frame)
+        _detector.update(detections, frame)
 
         # Add target tracking results to the output
-        queue_res.put((idx_frame, res, fire_detector.targets))
+        queue_res.put((idx_frame, res, _detector.targets))
 
     logging.info('detector processing loop exited gracefully.')

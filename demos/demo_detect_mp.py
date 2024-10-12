@@ -14,9 +14,9 @@ def parse_args():
     # parser.add_argument('--path_video',
     #                     default='/media/manu/ST2000DM005-2U91/fire/data/20240806/BOSH-FM数据采集/jiu-shinei/J-D-40m-002.mp4')
     parser.add_argument('--path_video',
-                        default='/media/manu/ST2000DM005-2U91/fire/test/V3/positive/fire (61).mp4')
+                        default='/media/manu/ST2000DM005-2U91/fire/data/test/V3/positive/fire (82).mp4')
     # parser.add_argument('--path_video',
-    #                     default='/media/manu/ST2000DM005-2U91/fire/test/V3/negative/nofire (176).mp4')
+    #                     default='/media/manu/ST2000DM005-2U91/fire/data/test/V3/negative/nofire (33).mp4')
     parser.add_argument('--source',
                         default='/media/manu/ST2000DM005-2U91/workspace/yolov9/figure/horses_prediction.jpg')
     parser.add_argument('--yolo_root', default='/media/manu/ST2000DM005-2U91/workspace/yolov9/')
@@ -24,7 +24,7 @@ def parse_args():
     parser.add_argument('--imgsz', type=int, default=1280, help='inference size h,w')
     parser.add_argument('--device', type=str, default='0', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
     parser.add_argument('--weights', type=str,
-                        default='/home/manu/mnt/8gpu_3090/test/runs/train/yolov9-s-fire-s1280_10/weights/last.pt')
+                        default='/home/manu/mnt/8gpu_3090/test/runs/train/yolov9-s-fire-s1280_27/weights/last.pt')
     parser.add_argument('--conf-thres', type=float, default=0.1, help='confidence threshold')
     parser.add_argument('--save-txt', default=False, help='save results to *.txt')
     parser.add_argument('--nosave', default=True, help='do not save images/videos')
@@ -45,7 +45,7 @@ def run(args):
     q_detector_res = Queue()
     p_detector = Process(target=process_detector, args=(args, q_detector, q_detector_res, stop_event), daemon=True)
     p_detector.start()
-    time.sleep(3)  # wait for model init
+    time.sleep(4)  # wait for model init
 
     q_displayer = Queue()
     p_displayer = Process(

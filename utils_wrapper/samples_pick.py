@@ -19,7 +19,7 @@ def parse_args():
                         help='Output directory for label files')
     parser.add_argument('--imgs_dir_out', default='/home/manu/mnt/ST8000DM004-2U91/jb_raw/03数据标注-samples-merge-pick/images',
                         help='Output directory for image files')
-    parser.add_argument('--conf_threshold', type=float, nargs=2, default=[0.0, 1.0],
+    parser.add_argument('--conf_threshold', type=float, nargs=2, default=[0.1, 1.0],
                         help='Confidence threshold for selecting images and labels')
     return parser.parse_args()
 
