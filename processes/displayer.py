@@ -132,7 +132,7 @@ def process_displayer(queue, queue_res, event,
                     alarm_status = "ALARM" if is_alarm else "NO ALARM"
                     with open(os.path.join(save_root, f'{video_name}.txt'), 'w') as f:
                         f.write(f'{video_name} <{alarm_status}>\n')
-                    event.set()
+                    # event.set()
                 else:
                     color = get_color_for_class(cls)
 

@@ -370,3 +370,105 @@ class FireDetector:
             os.chdir(original_cwd)
 
         return opt
+
+
+class SmokeDetector(FireDetector):
+    def __init__(self, args):
+        super(SmokeDetector, self).__init__(args)
+
+    def update(self, detections, frame):
+        """
+        Update targets based on new detections.
+
+        Args:
+            detections: List of detected bounding boxes in the format [x1, y1, x2, y2].
+            frame: The current frame for calculating patch differences.
+        """
+        # Apply background subtraction
+        fgmask = self.fgbg.apply(frame)
+
+        matched = []
+        frame_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        for det in detections:
+            if len(det.split()) == 6:
+                cls, center_x, center_y, box_w, box_h, conf = map(float, det.split())
+            else:
+                cls, center_x, center_y, box_w, box_h = map(float, det.split())
+                conf = 0.0
+
+            bbox = [
+                center_x - box_w / 2,
+                center_y - box_w / 2,
+                center_x + box_w / 2,
+                center_y + box_h / 2
+            ]
+            area = (bbox[2] - bbox[0]) * (bbox[3] - bbox[1])  # Calculate area of the bounding box
+
+            best_iou = 0
+            best_target = None
+            for target in self.targets:
+                iou = self._calculate_iou(bbox, target.bbox)
+                if iou > best_iou:
+                    best_iou = iou
+                    best_target = target
+
+            if best_iou > self.iou_threshold:
+                best_target.bbox = bbox
+                best_target.bbox_list.append(bbox)  # Append bbox to bbox_list
+                best_target.lost_frames = 0
+                best_target.age += 1
+                best_target.conf_list.append(conf)
+
+                diff = self._calculate_frame_difference(
+                    self.previous_frame, frame_gray, best_target.bbox, best_target.last_valid_bbox, frame.shape
+                )
+                best_target.diff_list.append(diff)
+
+                # Update last valid bbox to the current bbox
+                best_target.last_valid_bbox = bbox
+
+                # Calculate mask average for the current target
+                mask_avg = self._calculate_mask_avg(fgmask, best_target.bbox, frame.shape)
+                best_target.mask_avg_list.append(mask_avg)
+
+                # Update area_list and area_diff_list
+                best_target.area_list.append(area)
+                if len(best_target.area_list) > 1:
+                    area_diff = abs(area - best_target.area_list[-2])
+                    best_target.area_diff_list.append(area_diff)
+                else:
+                    best_target.area_diff_list.append(0.0)
+
+                matched.append(best_target)
+            else:
+                new_target = Target(
+                    bbox=bbox,
+                    last_valid_bbox=bbox,  # Initialize last_valid_bbox with the current bbox
+                    bbox_list=[bbox],  # Initialize bbox_list with the current bbox
+                    id=self.next_id,
+                    lost_frames=0,
+                    cls=cls,
+                    age=1,
+                    conf_list=[conf],
+                    diff_list=[0.0],
+                    center_list=[(center_x, center_y)],
+                    area_list=[area],
+                    area_diff_list=[0.0],
+                    mask_avg_list=[self._calculate_mask_avg(fgmask, bbox, frame.shape)]
+                )
+                self.targets.append(new_target)
+                self.next_id += 1
+
+        for target in self.targets:
+            if target not in matched:
+                target.lost_frames += 1
+                target.conf_list.append(-1.0)
+                target.diff_list.append(0.0)
+
+                # Calculate mask average for the current target
+                mask_avg = self._calculate_mask_avg(fgmask, target.bbox, frame.shape)
+                target.mask_avg_list.append(mask_avg)
+                target.bbox_list.append(target.bbox)  # Ensure bbox_list is updated
+
+        self.targets = [t for t in self.targets if t.lost_frames <= self.max_lost_frames]
+        self.previous_frame = frame_gray

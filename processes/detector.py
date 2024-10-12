@@ -1,7 +1,7 @@
 import logging
 from queue import Empty
 
-from cores.fire_detector import FireDetector, FireDetectorNight
+from cores.x_detector import FireDetectorNight, SmokeDetector
 
 
 def process_detector_night(queue, queue_res, event):
@@ -32,7 +32,8 @@ def process_detector_night(queue, queue_res, event):
 
 
 def process_detector(args, queue, queue_res, event):
-    _detector = FireDetector(args)
+    # _detector = FireDetector(args)
+    _detector = SmokeDetector(args)
 
     while not event.is_set():
         latest_item = None
