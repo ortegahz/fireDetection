@@ -23,6 +23,7 @@ class Target:
     area_list: list = field(default_factory=list)
     area_diff_list: list = field(default_factory=list)
     mask_avg_list: list = field(default_factory=list)
+    flow_consistency_list: list = field(default_factory=list)
 
 
 class FireDetectorNight:
@@ -377,19 +378,17 @@ class SmokeDetector(FireDetector):
         super(SmokeDetector, self).__init__(args)
 
     def update(self, detections, frame):
-        """
-        Update targets based on new detections.
-
-        Args:
-            detections: List of detected bounding boxes in the format [x1, y1, x2, y2].
-            frame: The current frame for calculating patch differences.
-        """
-        # Apply background subtraction
         fgmask = self.fgbg.apply(frame)
 
         matched = []
         frame_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+        if self.previous_frame is not None:
+            # Calculate optical flow
+            flow = cv2.calcOpticalFlowFarneback(self.previous_frame, frame_gray, None, 0.5, 3, 15, 3, 5, 1.2, 0)
+
         for det in detections:
+            # Parse detection
             if len(det.split()) == 6:
                 cls, center_x, center_y, box_w, box_h, conf = map(float, det.split())
             else:
@@ -398,11 +397,12 @@ class SmokeDetector(FireDetector):
 
             bbox = [
                 center_x - box_w / 2,
-                center_y - box_w / 2,
+                center_y - box_h / 2,
                 center_x + box_w / 2,
                 center_y + box_h / 2
             ]
-            area = (bbox[2] - bbox[0]) * (bbox[3] - bbox[1])  # Calculate area of the bounding box
+
+            area = (bbox[2] - bbox[0]) * (bbox[3] - bbox[1])
 
             best_iou = 0
             best_target = None
@@ -414,7 +414,7 @@ class SmokeDetector(FireDetector):
 
             if best_iou > self.iou_threshold:
                 best_target.bbox = bbox
-                best_target.bbox_list.append(bbox)  # Append bbox to bbox_list
+                best_target.bbox_list.append(bbox)
                 best_target.lost_frames = 0
                 best_target.age += 1
                 best_target.conf_list.append(conf)
@@ -427,7 +427,6 @@ class SmokeDetector(FireDetector):
                 # Update last valid bbox to the current bbox
                 best_target.last_valid_bbox = bbox
 
-                # Calculate mask average for the current target
                 mask_avg = self._calculate_mask_avg(fgmask, best_target.bbox, frame.shape)
                 best_target.mask_avg_list.append(mask_avg)
 
@@ -439,12 +438,17 @@ class SmokeDetector(FireDetector):
                 else:
                     best_target.area_diff_list.append(0.0)
 
+                # Calculate optical flow consistency
+                if self.previous_frame is not None:
+                    flow_consistency = self._calculate_optical_flow_consistency(flow, best_target.bbox)
+                    best_target.flow_consistency_list.append(flow_consistency)
+
                 matched.append(best_target)
             else:
                 new_target = Target(
                     bbox=bbox,
-                    last_valid_bbox=bbox,  # Initialize last_valid_bbox with the current bbox
-                    bbox_list=[bbox],  # Initialize bbox_list with the current bbox
+                    last_valid_bbox=bbox,
+                    bbox_list=[bbox],
                     id=self.next_id,
                     lost_frames=0,
                     cls=cls,
@@ -454,7 +458,8 @@ class SmokeDetector(FireDetector):
                     center_list=[(center_x, center_y)],
                     area_list=[area],
                     area_diff_list=[0.0],
-                    mask_avg_list=[self._calculate_mask_avg(fgmask, bbox, frame.shape)]
+                    mask_avg_list=[self._calculate_mask_avg(fgmask, bbox, frame.shape)],
+                    flow_consistency_list=[0.0]  # Initialize with zero
                 )
                 self.targets.append(new_target)
                 self.next_id += 1
@@ -465,10 +470,62 @@ class SmokeDetector(FireDetector):
                 target.conf_list.append(-1.0)
                 target.diff_list.append(0.0)
 
-                # Calculate mask average for the current target
                 mask_avg = self._calculate_mask_avg(fgmask, target.bbox, frame.shape)
                 target.mask_avg_list.append(mask_avg)
-                target.bbox_list.append(target.bbox)  # Ensure bbox_list is updated
+                target.bbox_list.append(target.bbox)
 
+                # Append zero for unmatched targets
+                target.flow_consistency_list.append(0.0)
+
+        # Filter out targets
         self.targets = [t for t in self.targets if t.lost_frames <= self.max_lost_frames]
         self.previous_frame = frame_gray
+
+    def _calculate_optical_flow_consistency(self, flow, bbox, magnitude_threshold=1.0):
+        # Convert normalized bbox to integer pixel coordinates based on frame dimensions
+        height, width = flow.shape[:2]
+        x1 = int(bbox[0] * width)
+        y1 = int(bbox[1] * height)
+        x2 = int(bbox[2] * width)
+        y2 = int(bbox[3] * height)
+
+        # Ensure the coordinates are within the image boundaries
+        x1 = max(0, min(width - 1, x1))
+        y1 = max(0, min(height - 1, y1))
+        x2 = max(0, min(width, x2))
+        y2 = max(0, min(height, y2))
+
+        # Check if the coordinates form a valid patch
+        if x1 >= x2 or y1 >= y2:
+            return 0.0
+
+        flow_patch = flow[y1:y2, x1:x2]
+
+        # Ensure the flow_patch is valid
+        if flow_patch.size == 0:
+            return 0.0
+
+        # Use the angle of the flow vectors to determine direction consistency
+        mag, ang = cv2.cartToPolar(flow_patch[..., 0], flow_patch[..., 1])
+
+        # Filter out flow vectors with magnitude below the threshold
+        valid_indices = mag > magnitude_threshold
+        ang_filtered = ang[valid_indices]
+
+        # Ensure there are enough valid angles for consistency calculation
+        if ang_filtered.size == 0:
+            return 0.0
+
+        # Calculate the mean of filtered angles
+        ang_mean = np.mean(ang_filtered)
+
+        # Normalize angle differences to the range [-π, π]
+        ang_diff = (ang_filtered - ang_mean + np.pi) % (2 * np.pi) - np.pi
+
+        # Calculate angular standard deviation
+        ang_std = np.std(ang_diff)
+
+        # Calculate consistency as the inverse of the angular standard deviation
+        ang_consistency = 1.0 / (ang_std + 1e-5)  # Small epsilon to prevent division by zero
+
+        return ang_consistency

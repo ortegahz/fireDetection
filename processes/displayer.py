@@ -106,6 +106,7 @@ def process_displayer(queue, queue_res, event,
                 mask_avg = sum(target.mask_avg_list[-th_age:]) / th_age
                 avg_area_diff = sum(target.area_diff_list[-th_age:]) / th_age / area if age > th_age else 0.0
                 avg_area_diff_text = f"Avg Area Diff: {avg_area_diff:.2f}"
+                avg_flow_consistency = sum(target.flow_consistency_list[-th_age:]) / th_age if age > th_age else 0.0
 
                 top_left_x = int(bbox[0] * frame.shape[1])
                 top_left_y = int(bbox[1] * frame.shape[0])
@@ -125,7 +126,8 @@ def process_displayer(queue, queue_res, event,
                 normalized_avg_diff = avg_diff / current_area if current_area > 0 else 0.0
 
                 # if th_age < age and avg_conf > 0.5 and (normalized_avg_diff > 0.03 or avg_area_diff > 0.2):  # noqa
-                if age > th_age and avg_conf > 0.5 and avg_area_diff > 0.2:
+                # if age > th_age and avg_conf > 0.5 and avg_area_diff > 0.2:  # fire
+                if age > th_age and avg_conf > 0.5 and avg_flow_consistency > 0.3:  # smoke
                     color = (0, 0, 255)
                     is_alarm = True
                     print(f'is_alarm --> {is_alarm}')
@@ -138,7 +140,7 @@ def process_displayer(queue, queue_res, event,
 
                 cv2.rectangle(frame, (top_left_x, top_left_y), (bottom_right_x, bottom_right_y), color, 2)
                 cv2.putText(frame,
-                            f"I{target.id} A{age} C{avg_conf:.2f} D{normalized_avg_diff:.2f} S{avg_area_diff:.2f}",
+                            f"I{target.id} A{age} C{avg_conf:.2f} D{normalized_avg_diff:.2f} S{avg_area_diff:.2f} F{avg_flow_consistency:.2f}",
                             (top_left_x, top_left_y + 32),
                             cv2.FONT_HERSHEY_SIMPLEX, 0.9, color, 2)
 

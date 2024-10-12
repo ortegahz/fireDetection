@@ -12,7 +12,7 @@ from utils_wrapper.utils import set_logging
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--path_video',
-                        default='/media/manu/ST8000DM004-2U91/smoke/data/ULtests/木材火/jiujing&jiachun___172.20.20.104_visi_stream-.mp4')
+                        default='/media/manu/ST8000DM004-2U91/smoke/data/ULtests/木材火/jiujing&jiachun___172.20.20.104_visi_stream-clip.mp4')
     # parser.add_argument('--path_video',
     #                     default='/media/manu/ST2000DM005-2U91/fire/data/test/V3/positive/fire (69).mp4')
     # parser.add_argument('--path_video',
