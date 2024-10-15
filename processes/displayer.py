@@ -95,7 +95,7 @@ def process_displayer(queue, queue_res, event,
             det_res = det_res.get('runs/detect/exp/labels/pseudo', [])
             # frame = draw_boxes(frame, det_res)
 
-            th_age = 8
+            th_age = 4
             for target in targets:
                 bbox = target.bbox
                 cls = target.cls
@@ -127,14 +127,14 @@ def process_displayer(queue, queue_res, event,
 
                 # if th_age < age and avg_conf > 0.5 and (normalized_avg_diff > 0.03 or avg_area_diff > 0.2):  # noqa
                 # if age > th_age and avg_conf > 0.5 and avg_area_diff > 0.2:  # fire
-                if age > th_age and avg_conf > 0.5 and avg_flow_consistency > 0.3:  # smoke
+                if age > th_age and avg_conf > 0.3 and avg_flow_consistency > 0.3:  # smoke
                     color = (0, 0, 255)
                     is_alarm = True
                     print(f'is_alarm --> {is_alarm}')
                     alarm_status = "ALARM" if is_alarm else "NO ALARM"
                     with open(os.path.join(save_root, f'{video_name}.txt'), 'w') as f:
                         f.write(f'{video_name} <{alarm_status}>\n')
-                    # event.set()
+                    event.set()
                 else:
                     color = get_color_for_class(cls)
 

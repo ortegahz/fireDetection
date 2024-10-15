@@ -467,7 +467,7 @@ class SmokeDetector(FireDetector):
         for target in self.targets:
             if target not in matched:
                 target.lost_frames += 1
-                target.conf_list.append(-1.0)
+                target.conf_list.append(0.0)
                 target.diff_list.append(0.0)
 
                 mask_avg = self._calculate_mask_avg(fgmask, target.bbox, frame.shape)

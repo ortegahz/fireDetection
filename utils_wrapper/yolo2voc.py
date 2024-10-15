@@ -15,10 +15,10 @@ from utils import set_logging, make_dirs
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--labels_dir_in', default='/home/manu/tmp/fire_v4/labels')
-    parser.add_argument('--imgs_dir_in', default='/home/manu/tmp/fire_v4/images')
-    parser.add_argument('--output_dir', default='/home/manu/tmp/fire_unlabeled/VOCdevkit/VOC2007')
-    parser.add_argument('--class_mapping', default='{"0": "fire", "1": "candle_flame", "2": "round_fire"}')
+    parser.add_argument('--labels_dir_in', default='/home/manu/mnt/8gpu_3090/test/smoke_three_classes_V1_20240820/labels')
+    parser.add_argument('--imgs_dir_in', default='/home/manu/mnt/8gpu_3090/test/smoke_three_classes_V1_20240820/images')
+    parser.add_argument('--output_dir', default='/home/manu/tmp/smoke_unlabeled/VOCdevkit/VOC2007')
+    parser.add_argument('--class_mapping', default='{"0": "smoke", "1": "wire", "2": "dense"}')
     return parser.parse_args()
 
 
@@ -106,8 +106,8 @@ def find_image_file(imgs_dir_in, subset, file_name):
     """
     Find the image file with the given file name (without extension) in the specified directory and subset.
     """
-    # extensions = ['jpg', 'jpeg', 'png', 'bmp', 'tiff']
-    extensions = ['jpg']
+    extensions = ['jpg', 'jpeg', 'png', 'bmp', 'tiff']
+    # extensions = ['jpg']
     for ext in extensions:
         img_file = f"{file_name}.{ext}"
         img_path = os.path.join(imgs_dir_in, subset, img_file)
@@ -125,6 +125,7 @@ def convert_yolo_to_voc(labels_dir_in, imgs_dir_in, output_dir, class_mapping):
     make_dirs(imagesets_dir)
 
     subsets = os.listdir(labels_dir_in)
+    cnt = 0
     for subset in subsets:
         label_files = glob.glob(os.path.join(labels_dir_in, subset, '*.txt'))
         file_list = []
@@ -141,21 +142,22 @@ def convert_yolo_to_voc(labels_dir_in, imgs_dir_in, output_dir, class_mapping):
                     yolo_labels = f.readlines()
 
                 # Create VOC XML
-                xml_output_path = os.path.join(annotations_dir, f'{file_name}.xml')
+                xml_output_path = os.path.join(annotations_dir, f'{subset}_{file_name}.xml')
                 create_voc_xml(xml_output_path, img_path, image_width, image_height, yolo_labels, class_mapping)
 
                 # Copy image to JPEGImages directory
-                img_output_path = os.path.join(jpegimages_dir, os.path.basename(img_path))
+                img_output_path = os.path.join(jpegimages_dir, f'{subset}_{os.path.basename(img_path)}')
                 shutil.copyfile(img_path, img_output_path)
-
+                cnt += 1
                 # Add to file list
-                file_list.append(file_name)
+                file_list.append(f'{subset}_{file_name}')
             else:
                 logging.warning(f"Image file for {file_name} does not exist in subset {subset}, skipping.")
 
         # Write file list for the current subset
         with open(os.path.join(imagesets_dir, f"{subset}.txt"), "w") as f:
             f.write("\n".join(file_list) + "\n")
+    logging.info(f'cnt --> {cnt}')
 
 
 def main():

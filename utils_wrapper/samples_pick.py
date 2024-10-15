@@ -11,7 +11,7 @@ from utils import set_logging, make_dirs
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--labels_dir_in', default='/home/manu/mnt/8gpu_3090/test/runs/fire/detect/labels/',
+    parser.add_argument('--labels_dir_in', default='/home/manu/mnt/8gpu_3090/test/runs/smoke_cvt/detect_cvd/labels/',
                         help='Input directory for label files')
     parser.add_argument('--imgs_dir_in', default='/media/manu/ST8000DM004-2U91/jb_raw/03数据标注-samples-merge/',
                         help='Input directory for image files')
