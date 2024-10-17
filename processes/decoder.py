@@ -35,7 +35,7 @@ def process_decoder(path_video, queue, event, buff_len=5, fps_scale=8):
             queue.get()
             logging.warning('dropping frame !')
         queue.put([tsp_frame, idx_frame, frame, fc])
-        logging.info(f'decoder idx_frame --> {idx_frame}')
+        logging.info(f'decoder idx_frame --> {idx_frame} / {fc} / {queue.qsize()}')
 
         while time.time() - t_last < 1. / (fps / fps_scale):
             time.sleep(0.001)

@@ -11,13 +11,13 @@ from utils import set_logging, make_dirs
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--labels_dir_in', default='/home/manu/mnt/8gpu_3090/test/runs/smoke_cvt/detect_cvd/labels/',
+    parser.add_argument('--labels_dir_in', default='/home/manu/mnt/8gpu_3090/test/runs/smoke_cvt/detect_cvd27/labels',
                         help='Input directory for label files')
-    parser.add_argument('--imgs_dir_in', default='/media/manu/ST8000DM004-2U91/jb_raw/03数据标注-samples-merge/',
+    parser.add_argument('--imgs_dir_in', default='/home/manu/mnt/ST8000DM004-2U91/smoke/data/FM烟雾数据20241012_pick_sample-merge',
                         help='Input directory for image files')
-    parser.add_argument('--labels_dir_out', default='/home/manu/mnt/ST8000DM004-2U91/jb_raw/03数据标注-samples-merge-pick/labels',
+    parser.add_argument('--labels_dir_out', default='/home/manu/mnt/ST8000DM004-2U91/smoke/data/FM烟雾数据20241012_pick_sample-merge-pick/labels',
                         help='Output directory for label files')
-    parser.add_argument('--imgs_dir_out', default='/home/manu/mnt/ST8000DM004-2U91/jb_raw/03数据标注-samples-merge-pick/images',
+    parser.add_argument('--imgs_dir_out', default='/home/manu/mnt/ST8000DM004-2U91/smoke/data/FM烟雾数据20241012_pick_sample-merge-pick/images',
                         help='Output directory for image files')
     parser.add_argument('--conf_threshold', type=float, nargs=2, default=[0.1, 1.0],
                         help='Confidence threshold for selecting images and labels')

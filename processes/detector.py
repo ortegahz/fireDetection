@@ -1,5 +1,5 @@
 import logging
-from queue import Empty
+from multiprocessing import Queue
 
 from cores.x_detector import *
 
@@ -37,19 +37,15 @@ def process_detector(args, queue, queue_res, event):
 
     while not event.is_set():
         latest_item = None
-        # Get the latest frame from the queue
-        while True:
-            try:
-                latest_item = queue.get_nowait()
-            except Empty:
-                break
+        while queue.qsize() > 0:
+            latest_item = queue.get()
 
         if latest_item is None:
             continue
 
         tsp_frame, idx_frame, frame, fc = latest_item
 
-        logging.info(f'Detector idx_frame --> {idx_frame}')
+        logging.info(f'Detector idx_frame --> {idx_frame} / {queue.qsize()}')
         res = _detector.infer_yolo(frame)
 
         # Update targets with detection results

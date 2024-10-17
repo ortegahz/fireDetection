@@ -80,17 +80,21 @@ def process_displayer(queue, queue_res, event,
 
     idx_frame_res, det_res, targets, is_alarm = -1, None, [], False
     last_idx_frame = -1
-    while True:
+    while not event.is_set():
         tsp_frame, idx_frame, frame, fc = queue.get()
 
-        logging.info(f'displayer idx_frame --> {idx_frame}')
+        logging.info(f'displayer idx_frame --> {idx_frame} / {queue.qsize()}')
+
+        # while idx_frame_res < idx_frame and not event.is_set():
+        #     try:
+        #         idx_frame_res, det_res, targets = queue_res.get_nowait()
+        #         logging.info(f'displayer idx_frame_res --> {idx_frame_res}')
+        #     except Empty:
+        #         continue
 
         while idx_frame_res < idx_frame and not event.is_set():
-            try:
-                idx_frame_res, det_res, targets = queue_res.get_nowait()
-                logging.info(f'displayer idx_frame_res --> {idx_frame_res}')
-            except Empty:
-                continue
+            idx_frame_res, det_res, targets = queue_res.get()
+            logging.info(f'displayer idx_frame_res --> {idx_frame_res} / {queue_res.qsize()}')
 
         if last_idx_frame == idx_frame:
             event.set()

@@ -13,7 +13,7 @@ from utils_wrapper.utils import set_logging
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--path_video',
-                        default='/home/manu/mnt/ST2000DM005-2U91/fire/data/test/火/正例/fire(367).mp4')
+                        default='/home/manu/mnt/ST2000DM005-2U91/fire/data/test/火/正例/01_8米.mp4')
     # parser.add_argument('--path_video',
     #                     default='/media/manu/ST2000DM005-2U91/fire/data/test/V3/positive/fire (69).mp4')
     # parser.add_argument('--path_video',
@@ -40,7 +40,7 @@ def parse_args():
     parser.add_argument('--save-conf', default=True, help='save confidences in --save-txt labels')
     parser.add_argument('--alg_night', default=False)
     parser.add_argument('--save_root', type=str, default='/home/manu/tmp/fire_test_results')
-    parser.add_argument('--show', default=True)
+    parser.add_argument('--show', default=False)
     return parser.parse_args()
 
 
@@ -66,16 +66,18 @@ def run(args):
     p_decoder = Process(target=process_decoder, args=(args.path_video, q_decoder, stop_event), daemon=True)
     p_decoder.start()
 
-    frame = None
+    frame, item_frame = None, None
     while True:
         try:
             item_frame = q_decoder.get(timeout=1)
             tsp_frame, idx_frame, frame, fc = item_frame
+            logging.info(f'main idx_frame --> {idx_frame}')
         except Empty:
             logging.info("Timeout occurred, no items available in the queue within 1 second.")
         if frame is None or stop_event.is_set():
             break
         q_detector.put(item_frame)
+        # print(f'q_detector.qsize(): {q_detector.qsize()}')
         q_displayer.put(item_frame)
 
     logging.info('main processing loop exited gracefully.')
