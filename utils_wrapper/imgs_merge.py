@@ -12,9 +12,9 @@ from utils import set_logging, make_dirs
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--dir_root_in',
-                        default='/media/manu/ST8000DM004-2U91/jb_raw/03数据标注-samples/')
+                        default='/media/manu/ST8000DM004-2U91/smoke/data/FM烟雾数据20241012_pick_sample')
     parser.add_argument('--dir_root_out',
-                        default='/media/manu/ST8000DM004-2U91/jb_raw/03数据标注-samples-merge/')
+                        default='/media/manu/ST8000DM004-2U91/smoke/data/FM烟雾数据20241012_pick_sample-merge')
     return parser.parse_args()
 
 

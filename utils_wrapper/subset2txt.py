@@ -9,14 +9,14 @@ from utils import set_logging
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--dir_root_in',
-                        default='/home/Huangzhe/test/fire')
+                        default='/home/Huangzhe/test/FireDetectionV9_20241012_4classes')
     parser.add_argument('--dir_root_out',
-                        default='/home/Huangzhe/test/fire')
+                        default='/home/Huangzhe/test/FireDetectionV9_20241012_4classes')
     # parser.add_argument('--dir_root_in',
     #                     default='/home/Huangzhe/test/smoke_three_classes_V1_20240820')
     # parser.add_argument('--dir_root_out',
     #                     default='/home/Huangzhe/test/smoke_three_classes_V1_20240820')
-    parser.add_argument('--subset', default='pseudof')
+    parser.add_argument('--subset', default='test')
     return parser.parse_args()
 
 

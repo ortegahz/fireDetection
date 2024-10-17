@@ -2,6 +2,7 @@ import argparse
 import logging
 import time
 from multiprocessing import Process, Queue, Event
+from queue import Empty
 
 from processes.decoder import process_decoder
 from processes.detector import process_detector
@@ -11,27 +12,27 @@ from utils_wrapper.utils import set_logging
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    # parser.add_argument('--path_video',
-    #                     default='/media/manu/ST8000DM004-2U91/smoke/data/ULtests/木材火/jiujing&jiachun___172.20.20.104_visi_stream-clip.mp4')
+    parser.add_argument('--path_video',
+                        default='/home/manu/mnt/ST2000DM005-2U91/fire/data/test/火/正例/fire(367).mp4')
     # parser.add_argument('--path_video',
     #                     default='/media/manu/ST2000DM005-2U91/fire/data/test/V3/positive/fire (69).mp4')
     # parser.add_argument('--path_video',
-    #                     default='/media/manu/ST2000DM005-2U91/fire/data/test/V3/negative/nofire (33).mp4')
-    parser.add_argument('--path_video',
-                        default='/media/manu/ST8000DM004-2U91/smoke/data/test/烟雾/正例（200）/smog (76).mp4')
+    #                     default='/media/manu/ST2000DM005-2U91/fire/data/test/V3/negative/nofire (98).mp4')
     # parser.add_argument('--path_video',
-    #                     default='/media/manu/ST2000DM005-2U91/fire/data/test/V3/negative/nofire (33).mp4')
+    #                     default='/media/manu/ST8000DM004-2U91/smoke/data/test/烟雾/正例（200）/smog (76).mp4')
     parser.add_argument('--source',
                         default='/media/manu/ST2000DM005-2U91/workspace/yolov9/figure/horses_prediction.jpg')
     parser.add_argument('--yolo_root', default='/media/manu/ST2000DM005-2U91/workspace/yolov9/')
     parser.add_argument('--view-img', default=False, help='show results')
     parser.add_argument('--device', type=str, default='0', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
-    # parser.add_argument('--imgsz', type=int, default=1280, help='inference size h,w')
+    parser.add_argument('--imgsz', type=int, default=1280, help='inference size h,w')
     # parser.add_argument('--weights', type=str,
     #                     default='/home/manu/mnt/8gpu_3090/test/runs/train/yolov9-s-fire-s1280_27/weights/last.pt')
-    parser.add_argument('--imgsz', type=int, default=640, help='inference size h,w')
+    # parser.add_argument('--imgsz', type=int, default=640, help='inference size h,w')
     parser.add_argument('--weights', type=str,
-                        default='/home/manu/mnt/8gpu_3090/test/runs/train_smoke/yolov9-s-smoke-s640_/weights/best.pt')
+                        default='/media/manu/ST2000DM005-2U91/fire/yolov9/models/yolov9-s-fire-s1280_10 - ft ov7 + mixplv0/weights/last.pt')
+    # parser.add_argument('--weights', type=str,
+    #                     default='/media/manu/ST8000DM004-2U91/smoke/yolov9/models/yolov9-s-smoke-s640_ - smoke_three_classes_V1_20240820 [relu]/weights/best.pt')
     parser.add_argument('--conf-thres', type=float, default=0.1, help='confidence threshold')
     parser.add_argument('--save-txt', default=False, help='save results to *.txt')
     parser.add_argument('--nosave', default=True, help='do not save images/videos')
@@ -39,7 +40,7 @@ def parse_args():
     parser.add_argument('--save-conf', default=True, help='save confidences in --save-txt labels')
     parser.add_argument('--alg_night', default=False)
     parser.add_argument('--save_root', type=str, default='/home/manu/tmp/fire_test_results')
-    parser.add_argument('--show', default=False)
+    parser.add_argument('--show', default=True)
     return parser.parse_args()
 
 
@@ -65,9 +66,13 @@ def run(args):
     p_decoder = Process(target=process_decoder, args=(args.path_video, q_decoder, stop_event), daemon=True)
     p_decoder.start()
 
+    frame = None
     while True:
-        item_frame = q_decoder.get()
-        tsp_frame, idx_frame, frame, fc = item_frame
+        try:
+            item_frame = q_decoder.get(timeout=1)
+            tsp_frame, idx_frame, frame, fc = item_frame
+        except Empty:
+            logging.info("Timeout occurred, no items available in the queue within 1 second.")
         if frame is None or stop_event.is_set():
             break
         q_detector.put(item_frame)

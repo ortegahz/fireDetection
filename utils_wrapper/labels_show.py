@@ -11,8 +11,8 @@ from utils import set_logging, make_dirs
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--labels_dir_in', default='/home/manu/tmp/mm_results/labels/pseudof/')
-    parser.add_argument('--imgs_dir_in', default='/home/manu/tmp/mm_results/images/pseudof/')
+    parser.add_argument('--labels_dir_in', default='/home/manu/tmp/FireDetectionV9_20241012_4classes/labels/val/')
+    parser.add_argument('--imgs_dir_in', default='/home/manu/tmp/FireDetectionV9_20241012_4classes/images/val/')
     # parser.add_argument('--labels_dir_in', default='/home/manu/tmp/smoke_three_classes_V1_20240820/labels/val/')
     # parser.add_argument('--imgs_dir_in', default='/home/manu/tmp/smoke_three_classes_V1_20240820/images/val/')
     parser.add_argument('--output_dir', default='/home/manu/tmp/labels_show_results')
