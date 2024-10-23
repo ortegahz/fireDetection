@@ -1,7 +1,7 @@
 #!/bin/bash
 
-VIDEO_FOLDER="/home/manu/mnt/ST2000DM005-2U91/fire/data/test/火/正例/"
-#VIDEO_FOLDER="/media/manu/ST2000DM005-2U91/fire/data/test/V3/negative"
+#VIDEO_FOLDER="/home/manu/mnt/ST8000DM004-2U91/smoke/data/test/烟雾/正例（200）"
+VIDEO_FOLDER="/home/manu/mnt/ST8000DM004-2U91/smoke/data/test/烟雾/反例（200）"
 PYTHON_SCRIPT="demos/demo_detect_mp.py"
 SAVE_ROOT="/home/manu/tmp/fire_test_results"
 

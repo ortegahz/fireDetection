@@ -11,9 +11,9 @@ from utils import set_logging, make_dirs
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--dir_root_in', default='/home/manu/mnt/ST8000DM004-2U91/smoke/data/FM烟雾数据20241012_pick/')
-    parser.add_argument('--dir_root_out', default='/home/manu/mnt/ST8000DM004-2U91/smoke/data/FM烟雾数据20241012_pick_sample/')
-    parser.add_argument('--sample_interval', default=8, type=int)
+    parser.add_argument('--dir_root_in', default='/home/manu/mnt/ST8000DM004-2U91/smoke/data/FM烟雾数据20241012_pick_manual')
+    parser.add_argument('--dir_root_out', default='/home/manu/mnt/ST8000DM004-2U91/smoke/data/FM烟雾数据20241012_pick_manual_pic')
+    parser.add_argument('--sample_interval', default=1, type=int, help='second')
     parser.add_argument('--image_sample_interval', default=1, type=int)
     return parser.parse_args()
 

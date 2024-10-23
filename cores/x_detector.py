@@ -24,6 +24,7 @@ class Target:
     area_diff_list: list = field(default_factory=list)
     mask_avg_list: list = field(default_factory=list)
     flow_consistency_list: list = field(default_factory=list)
+    flow_vector_list: list = field(default_factory=list)  # Add this to store the sum of flow vectors
 
 
 class FireDetectorNight:
@@ -383,6 +384,7 @@ class SmokeDetector(FireDetector):
         matched = []
         frame_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
+        flow = None
         if self.previous_frame is not None:
             # Calculate optical flow
             flow = cv2.calcOpticalFlowFarneback(self.previous_frame, frame_gray, None, 0.5, 3, 15, 3, 5, 1.2, 0)
@@ -439,9 +441,13 @@ class SmokeDetector(FireDetector):
                     best_target.area_diff_list.append(0.0)
 
                 # Calculate optical flow consistency
-                if self.previous_frame is not None:
+                if flow is not None:
                     flow_consistency = self._calculate_optical_flow_consistency(flow, best_target.bbox)
                     best_target.flow_consistency_list.append(flow_consistency)
+
+                    # Calculate sum vector of flow
+                    flow_vector_sum = self._calculate_flow_vector_sum(flow, best_target.bbox)
+                    best_target.flow_vector_list.append(flow_vector_sum)
 
                 matched.append(best_target)
             else:
@@ -459,7 +465,8 @@ class SmokeDetector(FireDetector):
                     area_list=[area],
                     area_diff_list=[0.0],
                     mask_avg_list=[self._calculate_mask_avg(fgmask, bbox, frame.shape)],
-                    flow_consistency_list=[0.0]  # Initialize with zero
+                    flow_consistency_list=[0.0],  # Initialize with zero
+                    flow_vector_list=[[0.0, 0.0]]  # Initialize flow vector sum with zero
                 )
                 self.targets.append(new_target)
                 self.next_id += 1
@@ -476,6 +483,7 @@ class SmokeDetector(FireDetector):
 
                 # Append zero for unmatched targets
                 target.flow_consistency_list.append(0.0)
+                target.flow_vector_list.append([0.0, 0.0])
 
         # Filter out targets
         self.targets = [t for t in self.targets if t.lost_frames <= self.max_lost_frames]
@@ -529,3 +537,33 @@ class SmokeDetector(FireDetector):
         ang_consistency = 1.0 / (ang_std + 1e-5)  # Small epsilon to prevent division by zero
 
         return ang_consistency
+
+    def _calculate_flow_vector_sum(self, flow, bbox):
+        height, width = flow.shape[:2]
+        x1 = int(bbox[0] * width)
+        y1 = int(bbox[1] * height)
+        x2 = int(bbox[2] * width)
+        y2 = int(bbox[3] * height)
+
+        if x1 >= x2 or y1 >= y2:
+            return [0.0, 0.0]
+
+        flow_patch = flow[y1:y2, x1:x2]
+
+        if flow_patch.size == 0:
+            return [0.0, 0.0]
+
+        sum_flow_x = np.sum(flow_patch[..., 0])
+        sum_flow_y = np.sum(flow_patch[..., 1])
+
+        # Calculate the area of the bounding box
+        bbox_area = (x2 - x1) * (y2 - y1)
+
+        if bbox_area == 0:
+            return [0.0, 0.0]
+
+        # Normalize the flow vectors by the area of the bounding box
+        normalized_flow_x = sum_flow_x / bbox_area
+        normalized_flow_y = sum_flow_y / bbox_area
+
+        return [normalized_flow_x * 64., normalized_flow_y * 64.]

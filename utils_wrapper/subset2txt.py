@@ -16,7 +16,7 @@ def parse_args():
                         default='/home/Huangzhe/test/smoke_three_classes_V1_20240820')
     parser.add_argument('--dir_root_out',
                         default='/home/Huangzhe/test/smoke_three_classes_V1_20240820')
-    parser.add_argument('--subset', default='v1')
+    parser.add_argument('--subset', default='train')
     return parser.parse_args()
 
 

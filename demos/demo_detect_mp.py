@@ -12,27 +12,27 @@ from utils_wrapper.utils import set_logging
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--path_video',
-                        default='/home/manu/mnt/ST2000DM005-2U91/fire/data/test/火/正例/01_8米.mp4')
     # parser.add_argument('--path_video',
-    #                     default='/media/manu/ST2000DM005-2U91/fire/data/test/V3/positive/fire (69).mp4')
+    #                     default='/media/manu/ST2000DM005-2U91/fire/data/test/火/正例/16_12米-1.mp4')
+    parser.add_argument('--path_video',
+                        default='/media/manu/ST2000DM005-2U91/fire/data/test/V3/positive/fire (80).mp4')
     # parser.add_argument('--path_video',
     #                     default='/media/manu/ST2000DM005-2U91/fire/data/test/V3/negative/nofire (98).mp4')
     # parser.add_argument('--path_video',
-    #                     default='/media/manu/ST8000DM004-2U91/smoke/data/test/烟雾/正例（200）/smog (76).mp4')
+    #                     default='/media/manu/ST8000DM004-2U91/smoke/data/test/烟雾/正例（200）/smog (1).mp4')
+    # parser.add_argument('--path_video',
+    #                     default='/media/manu/ST8000DM004-2U91/smoke/data/test/烟雾/反例（200）/nosmog (63).mp4')
     parser.add_argument('--source',
                         default='/media/manu/ST2000DM005-2U91/workspace/yolov9/figure/horses_prediction.jpg')
     parser.add_argument('--yolo_root', default='/media/manu/ST2000DM005-2U91/workspace/yolov9/')
     parser.add_argument('--view-img', default=False, help='show results')
     parser.add_argument('--device', type=str, default='0', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
     parser.add_argument('--imgsz', type=int, default=1280, help='inference size h,w')
-    # parser.add_argument('--weights', type=str,
-    #                     default='/home/manu/mnt/8gpu_3090/test/runs/train/yolov9-s-fire-s1280_27/weights/last.pt')
-    # parser.add_argument('--imgsz', type=int, default=640, help='inference size h,w')
     parser.add_argument('--weights', type=str,
                         default='/media/manu/ST2000DM005-2U91/fire/yolov9/models/yolov9-s-fire-s1280_10 - ft ov7 + mixplv0/weights/last.pt')
+    # parser.add_argument('--imgsz', type=int, default=640, help='inference size h,w')
     # parser.add_argument('--weights', type=str,
-    #                     default='/media/manu/ST8000DM004-2U91/smoke/yolov9/models/yolov9-s-smoke-s640_ - smoke_three_classes_V1_20240820 [relu]/weights/best.pt')
+    #                     default='/media/manu/ST8000DM004-2U91/smoke/yolov9/models/yolov9-s-smoke-s640_25 - ov1 + pv0 + av0 [relu]/weights/best.pt')
     parser.add_argument('--conf-thres', type=float, default=0.1, help='confidence threshold')
     parser.add_argument('--save-txt', default=False, help='save results to *.txt')
     parser.add_argument('--nosave', default=True, help='do not save images/videos')

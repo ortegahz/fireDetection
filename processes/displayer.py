@@ -1,6 +1,5 @@
 import logging
 import os
-from queue import Empty
 
 import cv2
 import numpy as np
@@ -85,13 +84,6 @@ def process_displayer(queue, queue_res, event,
 
         logging.info(f'displayer idx_frame --> {idx_frame} / {queue.qsize()}')
 
-        # while idx_frame_res < idx_frame and not event.is_set():
-        #     try:
-        #         idx_frame_res, det_res, targets = queue_res.get_nowait()
-        #         logging.info(f'displayer idx_frame_res --> {idx_frame_res}')
-        #     except Empty:
-        #         continue
-
         while idx_frame_res < idx_frame and not event.is_set():
             idx_frame_res, det_res, targets = queue_res.get()
             logging.info(f'displayer idx_frame_res --> {idx_frame_res} / {queue_res.qsize()}')
@@ -103,9 +95,9 @@ def process_displayer(queue, queue_res, event,
         if idx_frame_res == idx_frame and det_res is not None:
             last_idx_frame = idx_frame
             det_res = det_res.get('runs/detect/exp/labels/pseudo', [])
-            # frame = draw_boxes(frame, det_res)
 
-            th_age = 8
+            th_age = 8  # fire
+            # th_age = 4  # smoke
             for target in targets:
                 bbox = target.bbox
                 cls = target.cls
@@ -137,7 +129,7 @@ def process_displayer(queue, queue_res, event,
 
                 # if th_age < age and avg_conf > 0.5 and (normalized_avg_diff > 0.03 or avg_area_diff > 0.2):  # noqa
                 if age > th_age and avg_conf > 0.5 and avg_area_diff > 0.2:  # fire
-                # if age > th_age and avg_conf > 0.3 and avg_flow_consistency > 0.3:  # smoke
+                # if age > th_age and avg_conf > 0.3:  # smoke
                     color = (0, 0, 255)
                     is_alarm = True
                     print(f'is_alarm --> {is_alarm}')
@@ -146,13 +138,13 @@ def process_displayer(queue, queue_res, event,
                         f.write(f'{video_name} <{alarm_status}>\n')
                     cv2.rectangle(frame, (top_left_x, top_left_y), (bottom_right_x, bottom_right_y), color, 2)
                     cv2.imwrite(os.path.join(save_root, f'{video_name}.jpg'), frame)
-                    event.set()
+                    # event.set()
                 else:
                     color = get_color_for_class(cls)
 
                 cv2.rectangle(frame, (top_left_x, top_left_y), (bottom_right_x, bottom_right_y), color, 2)
                 cv2.putText(frame,
-                            f"I{target.id} A{age} C{avg_conf:.2f} D{normalized_avg_diff:.2f} S{avg_area_diff:.2f} F{avg_flow_consistency:.2f}",
+                            f"I{target.id} A{age} C{avg_conf:.2f} S{avg_area_diff:.2f}",
                             (top_left_x, top_left_y + 32),
                             cv2.FONT_HERSHEY_SIMPLEX, 0.9, color, 2)
 
@@ -165,6 +157,14 @@ def process_displayer(queue, queue_res, event,
                     curr_center = (int((curr_bbox[0] + curr_bbox[2]) / 2 * frame.shape[1]),
                                    int((curr_bbox[1] + curr_bbox[3]) / 2 * frame.shape[0]))
                     cv2.line(frame, prev_center, curr_center, color, 2)
+
+                # # Draw flow vector (arrow) if available
+                # if target.flow_vector_list:
+                #     # Use the most recent flow vector for drawing
+                #     flow_vector = target.flow_vector_list[-1]
+                #     center = ((top_left_x + bottom_right_x) // 2, (top_left_y + bottom_right_y) // 2)
+                #     end_point = (int(center[0] + flow_vector[0]), int(center[1] + flow_vector[1]))
+                #     cv2.arrowedLine(frame, center, end_point, color, 2, tipLength=0.3)
 
         alarm_status = "ALARM" if is_alarm else "NO ALARM"
         with open(os.path.join(save_root, f'{video_name}.txt'), 'w') as f:
