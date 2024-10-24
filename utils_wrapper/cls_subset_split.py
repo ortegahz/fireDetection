@@ -31,7 +31,8 @@ def split_data(input_dir, output_dir, val_ratio):
     random.shuffle(pos_files)
     random.shuffle(neg_files)
 
-    # neg_files = random.sample(neg_files, len(pos_files))  # assert len(neg_files) > len(pos_files)
+    # neg_files = random.sample(neg_files, len(pos_files))  # assert len() > len(pos_files)
+    pos_files = random.sample(pos_files, len(neg_files))  # assert len(pos_files) > len(neg_files)
 
     val_size_pos = int(len(pos_files) * val_ratio)
     val_size_neg = int(len(neg_files) * val_ratio)

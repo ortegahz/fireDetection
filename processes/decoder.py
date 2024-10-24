@@ -4,7 +4,7 @@ import time
 import cv2
 
 
-def process_decoder(path_video, queue, event, buff_len=5, fps_scale=8):
+def process_decoder(path_video, queue, event, buff_len=5):
     idx_frame = 0
     cap = cv2.VideoCapture(path_video)
     fps = cap.get(cv2.CAP_PROP_FPS)
@@ -12,6 +12,9 @@ def process_decoder(path_video, queue, event, buff_len=5, fps_scale=8):
     logging.info(f'fps --> {fps}')
     if not cap.isOpened():
         logging.error('failed to open video stream !')
+
+    fps_scale = round(fps)
+    logging.info(f'fps_scale --> {fps_scale}')
 
     last_valid_frame = None
     t_last = time.time()

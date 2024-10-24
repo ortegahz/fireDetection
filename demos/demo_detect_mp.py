@@ -1,5 +1,6 @@
 import argparse
 import logging
+import multiprocessing
 import time
 from multiprocessing import Process, Queue, Event
 from queue import Empty
@@ -12,12 +13,12 @@ from utils_wrapper.utils import set_logging
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    # parser.add_argument('--path_video',
-    #                     default='/media/manu/ST2000DM005-2U91/fire/data/test/火/正例/16_12米-1.mp4')
     parser.add_argument('--path_video',
-                        default='/media/manu/ST2000DM005-2U91/fire/data/test/V3/positive/fire (80).mp4')
+                        default='/media/manu/ST2000DM005-2U91/fire/data/20240806/BOSH-FM数据采集/zheng-shinei/Z-D-40m-001.mp4')
     # parser.add_argument('--path_video',
-    #                     default='/media/manu/ST2000DM005-2U91/fire/data/test/V3/negative/nofire (98).mp4')
+    #                     default='/media/manu/ST2000DM005-2U91/fire/data/test/V3/positive/fire (232).mp4')
+    # parser.add_argument('--path_video',
+    #                     default='/media/manu/ST2000DM005-2U91/fire/data/test/V3/negative/nofire (2).mp4')
     # parser.add_argument('--path_video',
     #                     default='/media/manu/ST8000DM004-2U91/smoke/data/test/烟雾/正例（200）/smog (1).mp4')
     # parser.add_argument('--path_video',
@@ -47,6 +48,8 @@ def parse_args():
 def run(args):
     logging.info(args)
 
+    multiprocessing.set_start_method('spawn', force=True)
+
     stop_event = Event()
 
     q_detector = Queue()
@@ -69,7 +72,7 @@ def run(args):
     frame, item_frame = None, None
     while True:
         try:
-            item_frame = q_decoder.get(timeout=1)
+            item_frame = q_decoder.get(timeout=8)
             tsp_frame, idx_frame, frame, fc = item_frame
             logging.info(f'main idx_frame --> {idx_frame}')
         except Empty:

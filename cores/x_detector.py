@@ -6,6 +6,7 @@ from dataclasses import dataclass, field
 
 import cv2
 import numpy as np
+from mmpretrain import ImageClassificationInferencer
 
 
 @dataclass
@@ -25,6 +26,10 @@ class Target:
     mask_avg_list: list = field(default_factory=list)
     flow_consistency_list: list = field(default_factory=list)
     flow_vector_list: list = field(default_factory=list)  # Add this to store the sum of flow vectors
+    image_patches: list = field(default_factory=list)  # Store image patches
+    flow_patches: list = field(default_factory=list)  # Store flow patches
+    diff_patches: list = field(default_factory=list)
+    conf_cls_list: list = field(default_factory=list)
 
 
 class FireDetectorNight:
@@ -140,6 +145,9 @@ class FireDetector:
         self.max_lost_frames = 5
         self.previous_frame = None
         self.fgbg = cv2.createBackgroundSubtractorMOG2()
+        _config = '/home/manu/mnt/ST2000DM005-2U91/workspace/mmpretrain/configs/resnet/resnet18_8xb32_fire.py'
+        _checkpoint = '/home/manu/tmp/work_dirs/resnet18_8xb32_fire/epoch_100.pth'
+        self.model_cls = ImageClassificationInferencer(model=_config, pretrained=_checkpoint, device='cuda')
 
     def infer_yolo(self, img):
         original_cwd = os.getcwd()
@@ -158,36 +166,38 @@ class FireDetector:
             os.chdir(original_cwd)
         return res
 
+    def _patch_infer(self, flow_patch, diff_patch):
+        if len(flow_patch) > 0 and len(diff_patch) > 0:
+            deltax = flow_patch[..., 0]
+            deltay = flow_patch[..., 1]
+            combined_display = cv2.merge((deltax.astype(np.uint8), diff_patch, deltay.astype(np.uint8)))
+            result = self.model_cls(combined_display)[0]
+            cls_conf = result['pred_scores'][1]
+            return cls_conf
+        return 0.0
+
     def update(self, detections, frame):
-        """
-        Update targets based on new detections.
-
-        Args:
-            detections: List of detected bounding boxes in the format [x1, y1, x2, y2].
-            frame: The current frame for calculating patch differences.
-        """
-        # Apply background subtraction
         fgmask = self.fgbg.apply(frame)
-
         matched = []
         frame_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
         for det in detections:
-            if len(det.split()) == 6:
-                cls, center_x, center_y, box_w, box_h, conf = map(float, det.split())
-            else:
-                cls, center_x, center_y, box_w, box_h = map(float, det.split())
-                conf = 0.0
+            # Parsing detection details...
+            cls, center_x, center_y, box_w, box_h, conf = (
+                map(float, det.split()) if len(det.split()) == 6 else (*map(float, det.split()), 0.0)
+            )
 
             bbox = [
                 center_x - box_w / 2,
-                center_y - box_w / 2,
+                center_y - box_h / 2,
                 center_x + box_w / 2,
                 center_y + box_h / 2
             ]
-            area = (bbox[2] - bbox[0]) * (bbox[3] - bbox[1])  # Calculate area of the bounding box
+            area = (bbox[2] - bbox[0]) * (bbox[3] - bbox[1])
 
             best_iou = 0
             best_target = None
+
             for target in self.targets:
                 iou = self._calculate_iou(bbox, target.bbox)
                 if iou > best_iou:
@@ -195,8 +205,9 @@ class FireDetector:
                     best_target = target
 
             if best_iou > self.iou_threshold:
+                # Update existing target properties...
                 best_target.bbox = bbox
-                best_target.bbox_list.append(bbox)  # Append bbox to bbox_list
+                best_target.bbox_list.append(bbox)
                 best_target.lost_frames = 0
                 best_target.age += 1
                 best_target.conf_list.append(conf)
@@ -206,37 +217,53 @@ class FireDetector:
                 )
                 best_target.diff_list.append(diff)
 
-                # Update last valid bbox to the current bbox
+                # Extract difference patch and update last valid bbox
+                diff_patch = self._calculate_diff_patch(self.previous_frame, frame_gray, bbox, frame.shape)
+                best_target.diff_patches.append(diff_patch)
+
                 best_target.last_valid_bbox = bbox
 
-                # Calculate mask average for the current target
                 mask_avg = self._calculate_mask_avg(fgmask, best_target.bbox, frame.shape)
                 best_target.mask_avg_list.append(mask_avg)
 
-                # Update area_list and area_diff_list
                 best_target.area_list.append(area)
-                if len(best_target.area_list) > 1:
-                    area_diff = abs(area - best_target.area_list[-2])
-                    best_target.area_diff_list.append(area_diff)
-                else:
-                    best_target.area_diff_list.append(0.0)
+                area_diff = abs(area - best_target.area_list[-2]) if len(best_target.area_list) > 1 else 0.0
+                best_target.area_diff_list.append(area_diff)
+
+                # Extract and store image patch
+                image_patch = self._extract_patch(frame, bbox, frame.shape)
+                best_target.image_patches.append(image_patch)
+
+                # Calculate and store optical flow patch if previous frame is available
+                flow_patch = np.array([])
+                if self.previous_frame is not None:
+                    flow_patch = self._calculate_optical_flow(self.previous_frame, frame_gray, bbox, frame.shape)
+                    best_target.flow_patches.append(flow_patch)
+
+                _cls_conf = self._patch_infer(flow_patch, diff_patch)
+                best_target.conf_cls_list.append(_cls_conf)
 
                 matched.append(best_target)
             else:
+                # Add new target
                 new_target = Target(
                     bbox=bbox,
-                    last_valid_bbox=bbox,  # Initialize last_valid_bbox with the current bbox
-                    bbox_list=[bbox],  # Initialize bbox_list with the current bbox
+                    last_valid_bbox=bbox,
+                    bbox_list=[bbox],
                     id=self.next_id,
                     lost_frames=0,
                     cls=cls,
                     age=1,
                     conf_list=[conf],
+                    conf_cls_list=[0.0],
                     diff_list=[0.0],
                     center_list=[(center_x, center_y)],
                     area_list=[area],
                     area_diff_list=[0.0],
-                    mask_avg_list=[self._calculate_mask_avg(fgmask, bbox, frame.shape)]
+                    mask_avg_list=[self._calculate_mask_avg(fgmask, bbox, frame.shape)],
+                    image_patches=[self._extract_patch(frame, bbox, frame.shape)],
+                    flow_patches=[],
+                    diff_patches=[]
                 )
                 self.targets.append(new_target)
                 self.next_id += 1
@@ -245,15 +272,47 @@ class FireDetector:
             if target not in matched:
                 target.lost_frames += 1
                 target.conf_list.append(-1.0)
+                target.conf_cls_list.append(-1.0)
                 target.diff_list.append(0.0)
 
-                # Calculate mask average for the current target
                 mask_avg = self._calculate_mask_avg(fgmask, target.bbox, frame.shape)
                 target.mask_avg_list.append(mask_avg)
-                target.bbox_list.append(target.bbox)  # Ensure bbox_list is updated
+                target.bbox_list.append(target.bbox)
 
         self.targets = [t for t in self.targets if t.lost_frames <= self.max_lost_frames]
         self.previous_frame = frame_gray
+
+    def _calculate_diff_patch(self, prev_frame, curr_frame, bbox, frame_shape):
+        if prev_frame is None or curr_frame is None:
+            return np.array([])
+
+        prev_patch = self._extract_patch(prev_frame, bbox, frame_shape)
+        curr_patch = self._extract_patch(curr_frame, bbox, frame_shape)
+
+        if prev_patch.size == 0 or curr_patch.size == 0:
+            return np.array([])
+
+        return cv2.absdiff(curr_patch, prev_patch)
+
+    def _calculate_optical_flow(self, prev_frame, curr_frame, bbox, frame_shape):
+        """
+        Calculate the optical flow between two frames for a given bounding box area.
+
+        Args:
+            prev_frame: Grayscale image of the previous frame.
+            curr_frame: Grayscale image of the current frame.
+            bbox: Bounding box coordinates [x1, y1, x2, y2].
+            frame_shape: Shape of the frames (height, width).
+
+        Returns:
+            A patch of the optical flow corresponding to the bounding box.
+        """
+        # Compute the dense optical flow using the Farneback method
+        flow = cv2.calcOpticalFlowFarneback(prev_frame, curr_frame, None, 0.5, 3, 15, 3, 5, 1.2, 0)
+
+        # Extract the optical flow patch corresponding to the bounding box
+        flow_patch = self._extract_patch(flow, bbox, frame_shape)
+        return flow_patch
 
     def _calculate_frame_difference(self, prev_frame, curr_frame, bbox, last_valid_bbox, frame_shape):
         if prev_frame is None:
@@ -272,14 +331,6 @@ class FireDetector:
         if prev_patch.shape != curr_patch.shape:  # TODO
             return 0.0
         return np.mean(np.abs(curr_patch - prev_patch))
-
-    def _extract_patch(self, frame, bbox, frame_shape):
-        top_left_x = int(bbox[0] * frame_shape[1])
-        top_left_y = int(bbox[1] * frame_shape[0])
-        bottom_right_x = int(bbox[2] * frame_shape[1])
-        bottom_right_y = int(bbox[3] * frame_shape[0])
-
-        return frame[top_left_y:bottom_right_y, top_left_x:bottom_right_x]
 
     def _extract_centered_patch_with_padding(self, frame, center_x, center_y, width, height):
         """
@@ -327,12 +378,22 @@ class FireDetector:
     def _extract_patch(frame, bbox, frame_shape):
         height, width = frame_shape[:2]
         x1, y1, x2, y2 = bbox
-        x1 = int(x1 * width)
-        y1 = int(y1 * height)
-        x2 = int(x2 * width)
-        y2 = int(y2 * height)
+
+        original_width = x2 - x1
+        original_height = y2 - y1
+
+        _aug_scale = 0.5
+        width_increase = original_width * _aug_scale
+        height_increase = original_height * _aug_scale
+
+        x1 = int(max(0, (x1 - width_increase) * width))
+        y1 = int(max(0, (y1 - height_increase) * height))
+        x2 = int(min(width, (x2 + width_increase) * width))
+        y2 = int(min(height, (y2 + height_increase) * height))
+
         if x1 < 0 or y1 < 0 or x2 > width or y2 > height:
             return np.array([])
+
         return frame[y1:y2, x1:x2]
 
     @staticmethod
