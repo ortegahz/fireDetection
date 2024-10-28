@@ -140,6 +140,7 @@ def process_displayer(queue, queue_res, event,
                 avg_conf_cls_rgb = sum(target.conf_cls_rgb_list[-th_age:]) / th_age
                 avg_diff = sum(target.diff_list[-th_age:]) / th_age
                 mask_avg = sum(target.mask_avg_list[-th_age:]) / th_age
+                depth_avg = target.depth_avg_list[-1]
                 avg_area_diff = sum(target.area_diff_list[-th_age:]) / th_age / area if age > th_age else 0.0
                 avg_flow_consistency = sum(target.flow_consistency_list[-th_age:]) / th_age if age > th_age else 0.0
 
@@ -188,6 +189,10 @@ def process_displayer(queue, queue_res, event,
                 cv2.putText(frame,
                             f"I{target.id} A{age} C{avg_conf:.2f} F{avg_conf_cls:.2f} M{mask_avg:.2f}",
                             (top_left_x, top_left_y + 32),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.9, color, 2)
+                cv2.putText(frame,
+                            f"D{depth_avg:.2f}",
+                            (top_left_x, top_left_y + 64),
                             cv2.FONT_HERSHEY_SIMPLEX, 0.9, color, 2)
 
         if not is_sample:

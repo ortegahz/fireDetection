@@ -5,7 +5,8 @@ import time
 from multiprocessing import Process, Queue, Event
 from queue import Empty
 
-from processes.decoder import process_decoder
+# from processes.decoder import process_decoder
+from processes.decoder_orbbec import process_decoder
 from processes.detector import process_detector
 from processes.displayer import process_displayer
 from utils_wrapper.utils import set_logging

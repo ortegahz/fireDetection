@@ -24,6 +24,7 @@ class Target:
     area_list: list = field(default_factory=list)
     area_diff_list: list = field(default_factory=list)
     mask_avg_list: list = field(default_factory=list)
+    depth_avg_list: list = field(default_factory=list)
     flow_consistency_list: list = field(default_factory=list)
     flow_vector_list: list = field(default_factory=list)  # Add this to store the sum of flow vectors
     image_patches: list = field(default_factory=list)  # Store image patches
@@ -184,7 +185,7 @@ class FireDetector:
         cls_conf = result['pred_scores'][1]
         return cls_conf
 
-    def update(self, detections, frame):
+    def update(self, detections, frame, frame_depth=None):
         fgmask = self.fgbg.apply(frame)
         matched = []
         frame_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -234,6 +235,11 @@ class FireDetector:
                 mask_avg = self._calculate_mask_avg(fgmask, best_target.bbox, frame.shape)
                 best_target.mask_avg_list.append(mask_avg)
 
+                depth_avg = 0.0
+                if frame_depth is not None:
+                    depth_avg = self._calculate_depth_avg(frame_depth, best_target.bbox, frame.shape)
+                best_target.depth_avg_list.append(depth_avg)
+
                 best_target.area_list.append(area)
                 area_diff = abs(area - best_target.area_list[-2]) if len(best_target.area_list) > 1 else 0.0
                 best_target.area_diff_list.append(area_diff)
@@ -255,6 +261,10 @@ class FireDetector:
 
                 matched.append(best_target)
             else:
+                depth_avg = 0.0
+                if frame_depth is not None:
+                    depth_avg = self._calculate_depth_avg(frame_depth, bbox, frame.shape)
+
                 # Add new target
                 new_target = Target(
                     bbox=bbox,
@@ -272,6 +282,7 @@ class FireDetector:
                     area_list=[area],
                     area_diff_list=[0.0],
                     mask_avg_list=[self._calculate_mask_avg(fgmask, bbox, frame.shape)],
+                    depth_avg_list=[depth_avg],
                     image_patches=[self._extract_patch(frame, bbox, frame.shape)],
                     flow_patches=[],
                     diff_patches=[]
@@ -281,6 +292,10 @@ class FireDetector:
 
         for target in self.targets:
             if target not in matched:
+                depth_avg = 0.0
+                if frame_depth is not None:
+                    depth_avg = self._calculate_depth_avg(frame_depth, target.bbox, frame.shape)
+
                 target.lost_frames += 1
                 target.conf_list.append(-1.0)
                 target.conf_cls_list.append(-1.0)
@@ -288,6 +303,7 @@ class FireDetector:
                 target.diff_list.append(0.0)
 
                 mask_avg = self._calculate_mask_avg(fgmask, target.bbox, frame.shape)
+                target.depth_avg_list.append(depth_avg)
                 target.mask_avg_list.append(mask_avg)
                 target.bbox_list.append(target.bbox)
 
@@ -368,6 +384,36 @@ class FireDetector:
         patch = cv2.copyMakeBorder(patch, pad_top, pad_bottom, pad_left, pad_right, cv2.BORDER_REFLECT)
 
         return patch
+
+    @staticmethod
+    def _calculate_depth_avg(depth, bbox, frame_shape):
+        height, width = frame_shape[:2]
+        x1, y1, x2, y2 = bbox
+        x1 = int(x1 * width)
+        y1 = int(y1 * height)
+        x2 = int(x2 * width)
+        y2 = int(y2 * height)
+
+        # Ensure the bounding box coordinates are within the frame boundaries
+        if x1 < 0 or y1 < 0 or x2 > width or y2 > height:
+            return 0
+
+        # Get the patch from the depth image inside the bounding box
+        patch = depth[y1:y2, x1:x2]
+
+        # If the patch is empty, return 0
+        if patch.size == 0:
+            return 0
+
+        # Filter the patch values to only include those greater than 100
+        valid_values = patch[patch > 256]
+
+        # If no valid values are present, return 0
+        if valid_values.size == 0:
+            return 0
+
+        # Calculate and return the average of these valid values
+        return np.mean(valid_values)
 
     @staticmethod
     def _calculate_mask_avg(mask, bbox, frame_shape):

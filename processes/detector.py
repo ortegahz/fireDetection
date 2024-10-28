@@ -50,7 +50,7 @@ def process_detector(args, queue, queue_res, event):
 
         # Update targets with detection results
         detections = res.get('runs/detect/exp/labels/pseudo', [])
-        _detector.update(detections, frame)
+        _detector.update(detections, frame, tsp_frame)
 
         # Add target tracking results to the output
         queue_res.put((idx_frame, res, _detector.targets))
