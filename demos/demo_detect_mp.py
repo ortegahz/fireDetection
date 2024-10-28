@@ -14,11 +14,11 @@ from utils_wrapper.utils import set_logging
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--path_video',
-                        default='/media/manu/ST2000DM005-2U91/fire/data/20240806/BOSH-FM数据采集/zheng-shinei/Z-D-40m-001.mp4')
+                        default='/media/manu/ST2000DM005-2U91/fire/data/20240806/BOSH-FM数据采集/zheng-shinei/Z-D-60m-001.mp4')
     # parser.add_argument('--path_video',
-    #                     default='/media/manu/ST2000DM005-2U91/fire/data/test/V3/positive/fire (232).mp4')
+    #                     default='/media/manu/ST2000DM005-2U91/fire/data/test/V3/positive/fire (81).mp4')
     # parser.add_argument('--path_video',
-    #                     default='/media/manu/ST2000DM005-2U91/fire/data/test/V3/negative/nofire (2).mp4')
+    #                     default='/media/manu/ST2000DM005-2U91/fire/data/test/V3/negative/nofire (10).mp4')
     # parser.add_argument('--path_video',
     #                     default='/media/manu/ST8000DM004-2U91/smoke/data/test/烟雾/正例（200）/smog (1).mp4')
     # parser.add_argument('--path_video',
@@ -30,7 +30,7 @@ def parse_args():
     parser.add_argument('--device', type=str, default='0', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
     parser.add_argument('--imgsz', type=int, default=1280, help='inference size h,w')
     parser.add_argument('--weights', type=str,
-                        default='/media/manu/ST2000DM005-2U91/fire/yolov9/models/yolov9-s-fire-s1280_10 - ft ov7 + mixplv0/weights/last.pt')
+                        default='/media/manu/ST2000DM005-2U91/fire/yolov9/models/yolov9-s-fire-s1280_11 - ft ov7 + mixplv1/weights/last.pt')
     # parser.add_argument('--imgsz', type=int, default=640, help='inference size h,w')
     # parser.add_argument('--weights', type=str,
     #                     default='/media/manu/ST8000DM004-2U91/smoke/yolov9/models/yolov9-s-smoke-s640_25 - ov1 + pv0 + av0 [relu]/weights/best.pt')
@@ -41,7 +41,7 @@ def parse_args():
     parser.add_argument('--save-conf', default=True, help='save confidences in --save-txt labels')
     parser.add_argument('--alg_night', default=False)
     parser.add_argument('--save_root', type=str, default='/home/manu/tmp/fire_test_results')
-    parser.add_argument('--show', default=False)
+    parser.add_argument('--show', default=True)
     return parser.parse_args()
 
 

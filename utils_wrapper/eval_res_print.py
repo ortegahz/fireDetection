@@ -14,7 +14,7 @@ def read_and_print_txt_files(folder_path, output_path):
             file_path = os.path.join(folder_path, txt_file)
             with open(file_path, 'r', encoding='utf-8') as file:
                 for line in file:
-                    if '<ALARM>' in line:
+                    if '<NO ALARM>' in line:
                         print(line.strip())
                         output_file.write(line.strip() + '\n')
                         _cnt += 1

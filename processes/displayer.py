@@ -3,73 +3,35 @@ import os
 
 import cv2
 import numpy as np
-from mmpretrain import ImageClassificationInferencer
 
 
 def _patch_save(target, idx_frame, video_name, save_root):
-    # Save image_patch
-    if target.image_patches:
+    # Save combined HSV-H patch
+    if target.flow_patches and target.diff_patches and target.image_patches:
         image_patch = target.image_patches[-1]
         image_patch_file_path = os.path.join(save_root,
                                              f'{video_name}_image_patch_{target.id}_{idx_frame}.jpg')
         cv2.imwrite(image_patch_file_path, image_patch)
 
-    # # Save flow_patch
-    # if target.flow_patches:
-    #     flow_patch = target.flow_patches[-1]
-    #     deltax = flow_patch[..., 0].astype(np.uint8)
-    #     deltay = flow_patch[..., 1].astype(np.uint8)
-    #     # deltax = cv2.normalize(deltax, None, 0, 255, cv2.NORM_MINMAX).astype(np.uint8)
-    #     # deltay = cv2.normalize(deltay, None, 0, 255, cv2.NORM_MINMAX).astype(np.uint8)
-    #
-    #     deltax_file_path = os.path.join(save_root,
-    #                                     f'{video_name}_deltax_patch_{target.id}_{idx_frame}.jpg')
-    #     deltay_file_path = os.path.join(save_root,
-    #                                     f'{video_name}_deltay_patch_{target.id}_{idx_frame}.jpg')
-    #
-    #     cv2.imwrite(deltax_file_path, deltax)
-    #     cv2.imwrite(deltay_file_path, deltay)
-    #
-    # # Save diff_patch
-    # if target.diff_patches:
-    #     diff_patch = target.diff_patches[-1].astype(np.uint8)
-    #     # diff_patch = cv2.normalize(diff_patch, None, 0, 255, cv2.NORM_MINMAX).astype(np.uint8)
-    #     diff_patch_file_path = os.path.join(save_root,
-    #                                         f'{video_name}_diff_patch_{target.id}_{idx_frame}.jpg')
-    #     cv2.imwrite(diff_patch_file_path, diff_patch)
-
-    # Save combined RGB patch
-    if target.flow_patches and target.diff_patches:
         flow_patch = target.flow_patches[-1]
-        diff_patch = target.diff_patches[-1]
+        diff_patch = target.diff_patches[-1].astype(np.uint8)
         deltax = flow_patch[..., 0]
         deltay = flow_patch[..., 1]
 
-        # deltax = cv2.normalize(deltax, None, 0, 255, cv2.NORM_MINMAX).astype(np.uint8)
-        # deltay = cv2.normalize(deltay, None, 0, 255, cv2.NORM_MINMAX).astype(np.uint8)
-        # diff_patch = cv2.normalize(diff_patch, None, 0, 255, cv2.NORM_MINMAX).astype(np.uint8)
+        # Convert the image patch to HSV and get the hue channel
+        hsv_patch = cv2.cvtColor(image_patch, cv2.COLOR_BGR2HSV)
+        hue_channel = hsv_patch[..., 0]
 
-        # Create an RGB image by merging three sources: image, flow (deltax), and diff
-        combined_display = cv2.merge((deltax.astype(np.uint8), diff_patch, deltay.astype(np.uint8)))
+        # Compute the magnitude of the flow vectors
+        flow_magnitude = cv2.magnitude(deltax, deltay).astype(np.uint8)
+
+        # Create an HSV image by merging the hue, diff (as saturation), and flow magnitude (as value)
+        combined_display = cv2.merge((hue_channel, diff_patch, flow_magnitude))
 
         # Save the combined image
         combined_file_path = os.path.join(save_root,
                                           f'{video_name}_combined_patch_{target.id}_{idx_frame}.jpg')
         cv2.imwrite(combined_file_path, combined_display)
-
-
-# def _patch_infer(target, model_cls):
-#     if target.flow_patches and target.diff_patches:
-#         flow_patch = target.flow_patches[-1]
-#         diff_patch = target.diff_patches[-1]
-#         deltax = flow_patch[..., 0]
-#         deltay = flow_patch[..., 1]
-#
-#         # Create an RGB image by merging three sources: image, flow (deltax), and diff
-#         combined_display = cv2.merge((deltax.astype(np.uint8), diff_patch, deltay.astype(np.uint8)))
-#         result = model_cls(combined_display)[0]
-#         return result['pred_scores'][1]
-#     return 0.0
 
 
 def get_color_for_class(cls):
@@ -167,7 +129,7 @@ def process_displayer(queue, queue_res, event,
             last_idx_frame = idx_frame
             det_res = det_res.get('runs/detect/exp/labels/pseudo', [])
 
-            th_age = 4  # fire
+            th_age = 2 if is_sample else 4
             for target in targets:
                 bbox = target.bbox
                 cls = target.cls
@@ -175,6 +137,7 @@ def process_displayer(queue, queue_res, event,
                 area = target.area_list[-1]
                 avg_conf = sum(target.conf_list[-th_age:]) / th_age
                 avg_conf_cls = sum(target.conf_cls_list[-th_age:]) / th_age
+                avg_conf_cls_rgb = sum(target.conf_cls_rgb_list[-th_age:]) / th_age
                 avg_diff = sum(target.diff_list[-th_age:]) / th_age
                 mask_avg = sum(target.mask_avg_list[-th_age:]) / th_age
                 avg_area_diff = sum(target.area_diff_list[-th_age:]) / th_age / area if age > th_age else 0.0
@@ -190,27 +153,13 @@ def process_displayer(queue, queue_res, event,
 
                 # conf_cls = _patch_infer(target, model_cls)
 
-                # Determine if an alarm condition is met
-                if age > th_age and avg_conf > 0.2 and avg_conf_cls > 0.5:  # Fire detection conditions
-                    color = (0, 0, 255)
-                    is_alarm = True
-                    print(f'is_alarm --> {is_alarm}')
-
-                    if is_sample:
-                        _patch_save(target, idx_frame, video_name, save_root)
-                    else:
-                        cv2.rectangle(frame, (top_left_x, top_left_y), (bottom_right_x, bottom_right_y), color, 2)
-                        frame_file_path = os.path.join(save_root, f'{video_name}.jpg')
-                        cv2.imwrite(frame_file_path, frame)
-                        event.set()
+                if is_sample:
+                    cdt = age > th_age and avg_conf > 0.2 and idx_frame > 25 * 4 and mask_avg > 0.4  # for pos sampling
+                    # cdt = age > th_age and avg_conf > 0.2  # for neg sampling
                 else:
-                    color = get_color_for_class(cls)
+                    cdt = age > th_age and avg_conf > 0.2 and avg_conf_cls > 0.4 and mask_avg > 0.1
 
-                cv2.rectangle(frame, (top_left_x, top_left_y), (bottom_right_x, bottom_right_y), color, 2)
-                cv2.putText(frame,
-                            f"I{target.id} A{age} C{avg_conf:.2f} M{avg_conf_cls:.2f}",
-                            (top_left_x, top_left_y + 32),
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.9, color, 2)
+                color = get_color_for_class(cls)
 
                 # Draw the trajectory using the stored positions in bbox_list
                 for i in range(1, len(target.bbox_list)):
@@ -221,6 +170,25 @@ def process_displayer(queue, queue_res, event,
                     curr_center = (int((curr_bbox[0] + curr_bbox[2]) / 2 * frame.shape[1]),
                                    int((curr_bbox[1] + curr_bbox[3]) / 2 * frame.shape[0]))
                     cv2.line(frame, prev_center, curr_center, color, 2)
+
+                if cdt:
+                    color = (0, 0, 255)
+                    is_alarm = True
+                    print(f'is_alarm --> {is_alarm}')
+
+                    if is_sample:
+                        _patch_save(target, idx_frame, video_name, save_root)
+                    else:
+                        cv2.rectangle(frame, (top_left_x, top_left_y), (bottom_right_x, bottom_right_y), color, 2)
+                        frame_file_path = os.path.join(save_root, f'{video_name}.jpg')
+                        cv2.imwrite(frame_file_path, frame)
+                        # event.set()
+
+                cv2.rectangle(frame, (top_left_x, top_left_y), (bottom_right_x, bottom_right_y), color, 2)
+                cv2.putText(frame,
+                            f"I{target.id} A{age} C{avg_conf:.2f} F{avg_conf_cls:.2f} M{mask_avg:.2f}",
+                            (top_left_x, top_left_y + 32),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.9, color, 2)
 
         if not is_sample:
             alarm_status = "ALARM" if is_alarm else "NO ALARM"

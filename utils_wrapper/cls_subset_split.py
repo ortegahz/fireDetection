@@ -32,7 +32,7 @@ def split_data(input_dir, output_dir, val_ratio):
     random.shuffle(neg_files)
 
     # neg_files = random.sample(neg_files, len(pos_files))  # assert len() > len(pos_files)
-    pos_files = random.sample(pos_files, len(neg_files))  # assert len(pos_files) > len(neg_files)
+    # pos_files = random.sample(pos_files, len(neg_files))  # assert len(pos_files) > len(neg_files)
 
     val_size_pos = int(len(pos_files) * val_ratio)
     val_size_neg = int(len(neg_files) * val_ratio)
@@ -48,6 +48,7 @@ def split_data(input_dir, output_dir, val_ratio):
     val_pos_dir = os.path.join(output_dir, 'val', 'pos')
     val_neg_dir = os.path.join(output_dir, 'val', 'neg')
 
+    make_dirs(output_dir, reset=True)
     make_dirs(train_pos_dir, reset=True)
     make_dirs(train_neg_dir, reset=True)
     make_dirs(val_pos_dir, reset=True)

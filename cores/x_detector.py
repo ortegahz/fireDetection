@@ -30,6 +30,7 @@ class Target:
     flow_patches: list = field(default_factory=list)  # Store flow patches
     diff_patches: list = field(default_factory=list)
     conf_cls_list: list = field(default_factory=list)
+    conf_cls_rgb_list: list = field(default_factory=list)
 
 
 class FireDetectorNight:
@@ -146,8 +147,10 @@ class FireDetector:
         self.previous_frame = None
         self.fgbg = cv2.createBackgroundSubtractorMOG2()
         _config = '/home/manu/mnt/ST2000DM005-2U91/workspace/mmpretrain/configs/resnet/resnet18_8xb32_fire.py'
-        _checkpoint = '/home/manu/tmp/work_dirs/resnet18_8xb32_fire/epoch_100.pth'
-        self.model_cls = ImageClassificationInferencer(model=_config, pretrained=_checkpoint, device='cuda')
+        _checkpoint = '/media/manu/ST2000DM005-2U91/fire/mmpre/models/resnet18_8xb32_fire_flow/epoch_100.pth'
+        self.model_cls_flow = ImageClassificationInferencer(model=_config, pretrained=_checkpoint, device='cuda')
+        _checkpoint = '/media/manu/ST2000DM005-2U91/fire/mmpre/models/resnet18_8xb32_fire_rgb_v0/epoch_100.pth'
+        self.model_cls_rgb = ImageClassificationInferencer(model=_config, pretrained=_checkpoint, device='cuda')
 
     def infer_yolo(self, img):
         original_cwd = os.getcwd()
@@ -166,15 +169,20 @@ class FireDetector:
             os.chdir(original_cwd)
         return res
 
-    def _patch_infer(self, flow_patch, diff_patch):
+    def _patch_infer_flow(self, flow_patch, diff_patch):
         if len(flow_patch) > 0 and len(diff_patch) > 0:
             deltax = flow_patch[..., 0]
             deltay = flow_patch[..., 1]
             combined_display = cv2.merge((deltax.astype(np.uint8), diff_patch, deltay.astype(np.uint8)))
-            result = self.model_cls(combined_display)[0]
+            result = self.model_cls_flow(combined_display)[0]
             cls_conf = result['pred_scores'][1]
             return cls_conf
         return 0.0
+
+    def _patch_infer_rgb(self, img_patch):
+        result = self.model_cls_rgb(img_patch)[0]
+        cls_conf = result['pred_scores'][1]
+        return cls_conf
 
     def update(self, detections, frame):
         fgmask = self.fgbg.apply(frame)
@@ -240,8 +248,10 @@ class FireDetector:
                     flow_patch = self._calculate_optical_flow(self.previous_frame, frame_gray, bbox, frame.shape)
                     best_target.flow_patches.append(flow_patch)
 
-                _cls_conf = self._patch_infer(flow_patch, diff_patch)
-                best_target.conf_cls_list.append(_cls_conf)
+                _cls_conf_flow = self._patch_infer_flow(flow_patch, diff_patch)
+                best_target.conf_cls_list.append(_cls_conf_flow)
+                _cls_conf_rgb = self._patch_infer_rgb(image_patch)
+                best_target.conf_cls_rgb_list.append(_cls_conf_rgb)
 
                 matched.append(best_target)
             else:
@@ -256,6 +266,7 @@ class FireDetector:
                     age=1,
                     conf_list=[conf],
                     conf_cls_list=[0.0],
+                    conf_cls_rgb_list=[0.0],  # match flow logic
                     diff_list=[0.0],
                     center_list=[(center_x, center_y)],
                     area_list=[area],
@@ -273,6 +284,7 @@ class FireDetector:
                 target.lost_frames += 1
                 target.conf_list.append(-1.0)
                 target.conf_cls_list.append(-1.0)
+                target.conf_cls_rgb_list.append(-1.0)
                 target.diff_list.append(0.0)
 
                 mask_avg = self._calculate_mask_avg(fgmask, target.bbox, frame.shape)

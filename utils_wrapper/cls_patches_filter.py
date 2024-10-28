@@ -37,8 +37,8 @@ def calculate_pixel_sum_normalized(image_folder, output_folder):
                 file_path_rgb = file_path.replace('combined', 'image')
                 # if pixel_sum_normalized < 16:
                 #     continue
-                shutil.copy(file_path, os.path.join(output_folder, filename))
-                # shutil.copy(file_path_rgb, os.path.join(output_folder, filename_rgb))
+                # shutil.copy(file_path, os.path.join(output_folder, filename))
+                shutil.copy(file_path_rgb, os.path.join(output_folder, filename_rgb))
             else:
                 print(f"Warning: Could not read image file {filename}")
 
@@ -50,9 +50,9 @@ def calculate_pixel_sum_normalized(image_folder, output_folder):
 
 
 # 使用函数，传入图像文件夹的路径和输出文件夹的路径
-# image_folder_path = '/home/manu/tmp/fire_test_results_pos'
-# output_folder_path = '/home/manu/tmp/fire_test_results_pos_pick'
-image_folder_path = '/home/manu/tmp/fire_test_results_neg'
-output_folder_path = '/home/manu/tmp/fire_test_results_neg_pick'
+# image_folder_path = '/home/manu/tmp/fire_cls_raw/fire_test_results_pos'
+# output_folder_path = '/home/manu/tmp/fire_cls_raw/fire_test_results_pos_pick'
+image_folder_path = '/home/manu/tmp/fire_cls_raw/fire_test_results_neg'
+output_folder_path = '/home/manu/tmp/fire_cls_raw/fire_test_results_neg_pick'
 make_dirs(output_folder_path, reset=True)
 calculate_pixel_sum_normalized(image_folder_path, output_folder_path)

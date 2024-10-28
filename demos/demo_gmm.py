@@ -2,7 +2,8 @@ import cv2
 import numpy as np
 
 # 创建视频捕获对象，读取视频文件
-video_path = '/media/manu/ST2000DM005-2U91/fire/test/V3/negative/nofire (49).mp4'
+video_path = '/media/manu/ST2000DM005-2U91/fire/data/test/V3/positive/fire (1).mp4'
+# video_path = '/media/manu/ST2000DM005-2U91/fire/data/test/V3/negative/nofire (33).mp4'
 cap = cv2.VideoCapture(video_path)
 
 # 检查视频是否正确打开
@@ -26,7 +27,7 @@ while True:
 
     # 创建一个小屏障的彩色掩码
     fg_red = np.zeros_like(frame)
-    fg_red[:, :, 2] = 255  # 将红色通道设置为最大值 (255)
+    fg_red[:, :, 1] = 255
 
     # 将红色掩码使用前景掩码筛选出前景部分
     red_foreground = cv2.bitwise_and(fg_red, fg_red, mask=fgmask)
