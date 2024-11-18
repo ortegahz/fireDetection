@@ -14,12 +14,12 @@ from utils import set_logging, make_dirs
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--dir_root_in',
-                        default='/home/manu/tmp/mm_filtered_res/imgs')
+                        default='/media/manu/ST2000DM005-2U91/fire/data/pseudo_filtered/v0/out/imgs')
     parser.add_argument('--dir_root_out',
-                        default='/home/manu/tmp/mm_results/')
+                        default='/media/manu/ST2000DM005-2U91/fire/data/pseudo_filtered/v0/mm_results/')
     parser.add_argument('--dir_json',
-                        default='/home/manu/tmp/mm_filtered_res/labels')
-    parser.add_argument('--score_threshold', type=float, default=0.3,
+                        default='/media/manu/ST2000DM005-2U91/fire/data/pseudo_filtered/v0/out/labels')
+    parser.add_argument('--score_threshold', type=float, default=0.1,
                         help='Score threshold for displaying bounding boxes')
     parser.add_argument('--subset', default='pseudof', help='Subset name')
     parser.add_argument('--force_imgs_copy', default=True)

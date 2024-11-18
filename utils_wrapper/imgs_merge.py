@@ -12,9 +12,9 @@ from utils import set_logging, make_dirs
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--dir_root_in',
-                        default='/home/manu/mnt/ST8000DM004-2U91/smoke/data/FM烟雾数据20241012_pick_manual_pic')
+                        default='/media/manu/ST2000DM005-2U91/fire/data/20240806/BOSH-FM数据采集/jiu-shiwai-pic/')
     parser.add_argument('--dir_root_out',
-                        default='/home/manu/mnt/ST8000DM004-2U91/smoke/data/FM烟雾数据20241012_pick_manual_pic_merge')
+                        default='/media/manu/ST2000DM005-2U91/fire/data/20240806/BOSH-FM数据采集/jiu-shiwai-pic-merge/')
     return parser.parse_args()
 
 

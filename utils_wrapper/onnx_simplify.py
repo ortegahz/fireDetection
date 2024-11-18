@@ -7,7 +7,7 @@ import onnx_graphsurgeon as gs
 import onnxruntime
 from onnxsim import simplify
 
-onnx_model = onnx.load("/home/manu/mnt/8gpu_3090/test/runs/train/yolov9-s-fire-s1280_11/weights/yolov9-s-converted.onnx")
+onnx_model = onnx.load("/media/manu/ST2000DM005-2U91/fire/yolov9/models/yolov9-s-fire-s1280_27 - ft ov7 + mixplv1f[un-done]/weights/modified_yolov9-s-converted.onnx")
 shape_dict = {"images": (1, 3, 736, 1280)}
 
 # 图优化
@@ -18,13 +18,13 @@ target_model = '/home/manu/tmp/modified_yolov9-s-converted-simplify.onnx'
 
 # 修改输入、输出
 graph.inputs = [graph.tensors()["images"].to_variable(dtype=np.float32, shape=shape_dict['images'])]
-# graph.outputs = [graph.tensors()["reg0"].to_variable(dtype=np.float32),
-#                  graph.tensors()["cls0"].to_variable(dtype=np.float32),
-#                  graph.tensors()["reg1"].to_variable(dtype=np.float32),
-#                  graph.tensors()["cls1"].to_variable(dtype=np.float32),
-#                  graph.tensors()["reg2"].to_variable(dtype=np.float32),
-#                  graph.tensors()["cls2"].to_variable(dtype=np.float32),]
-graph.outputs = [graph.tensors()["output0"].to_variable(dtype=np.float32),]
+graph.outputs = [graph.tensors()["output0"].to_variable(dtype=np.float32),
+                 graph.tensors()["output1"].to_variable(dtype=np.float32),
+                 graph.tensors()["output2"].to_variable(dtype=np.float32),
+                 graph.tensors()["output3"].to_variable(dtype=np.float32),
+                 graph.tensors()["output4"].to_variable(dtype=np.float32),
+                 graph.tensors()["output5"].to_variable(dtype=np.float32),]
+# graph.outputs = [graph.tensors()["output0"].to_variable(dtype=np.float32),]
 
 # 裁剪无用的node
 graph.cleanup().toposort()

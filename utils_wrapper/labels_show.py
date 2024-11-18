@@ -11,10 +11,10 @@ from utils import set_logging, make_dirs
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--labels_dir_in', default='/home/manu/mnt/ST8000DM004-2U91/smoke/data/FM烟雾数据20241012_pick_sample-merge-pick-manual//labels')
-    parser.add_argument('--imgs_dir_in', default='/home/manu/mnt/ST8000DM004-2U91/smoke/data/FM烟雾数据20241012_pick_sample-merge-pick-manual//images')
-    # parser.add_argument('--labels_dir_in', default='/home/manu/tmp/smoke_three_classes_V1_20240820/labels/val/')
-    # parser.add_argument('--imgs_dir_in', default='/home/manu/tmp/smoke_three_classes_V1_20240820/images/val/')
+    parser.add_argument('--labels_dir_in', default='/media/manu/ST2000DM005-2U91/fire/data/pseudo_filtered/out_all/labels/pseudof')
+    parser.add_argument('--imgs_dir_in', default='/media/manu/ST2000DM005-2U91/fire/data/pseudo_filtered/out_all/images/pseudof')
+    # parser.add_argument('--labels_dir_in', default='/media/manu/ST2000DM005-2U91/fire/data/20240806/BOSH-FM数据采集/jiu-shiwai-pic-merge-pick/labels')
+    # parser.add_argument('--imgs_dir_in', default='/media/manu/ST2000DM005-2U91/fire/data/20240806/BOSH-FM数据采集/jiu-shiwai-pic-merge-pick/images')
     parser.add_argument('--output_dir', default='/home/manu/tmp/labels_show_results')
     return parser.parse_args()
 

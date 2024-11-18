@@ -147,7 +147,7 @@ class FireDetector:
         self.max_lost_frames = 5
         self.previous_frame = None
         self.fgbg = cv2.createBackgroundSubtractorMOG2()
-        _config = '/home/manu/mnt/ST2000DM005-2U91/workspace/mmpretrain/configs/resnet/resnet18_8xb32_fire.py'
+        _config = '/media/manu/ST2000DM005-2U91/workspace/mmpretrain/configs/resnet/resnet18_8xb32_fire.py'
         _checkpoint = '/media/manu/ST2000DM005-2U91/fire/mmpre/models/resnet18_8xb32_fire_flow/epoch_100.pth'
         self.model_cls_flow = ImageClassificationInferencer(model=_config, pretrained=_checkpoint, device='cuda')
         _checkpoint = '/media/manu/ST2000DM005-2U91/fire/mmpre/models/resnet18_8xb32_fire_rgb_v0/epoch_100.pth'

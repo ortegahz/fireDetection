@@ -10,10 +10,10 @@ from utils import set_logging, make_dirs
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--base_dir', default='/home/Huangzhe/test/smoke_three_classes_V1_20240820')
-    parser.add_argument('--subset1', default='train', help='Name of the first subset to merge')
-    parser.add_argument('--subset2', default='a0', help='Name of the second subset to merge')
-    parser.add_argument('--output_subset', default='train_v1', help='Name of the output merged subset')
+    parser.add_argument('--base_dir', default='/home/Huangzhe/test/fire')
+    parser.add_argument('--subset1', default='v9', help='Name of the first subset to merge')
+    parser.add_argument('--subset2', default='pseudof', help='Name of the second subset to merge')
+    parser.add_argument('--output_subset', default='train', help='Name of the output merged subset')
     return parser.parse_args()
 
 

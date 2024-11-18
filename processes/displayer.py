@@ -101,6 +101,7 @@ def process_displayer(queue, queue_res, event,
                       video_path='/media/manu/ST2000DM005-2U91/fire/test/V3/negative/nofire (4096).mp4', show=True,
                       save_root='/home/manu/tmp/fire_test_results', is_sample=False):
     video_name = os.path.basename(video_path)
+    _save_idx = 0
     if show:
         name_window = 'frame'
         cv2.namedWindow(name_window, cv2.WINDOW_NORMAL)
@@ -126,6 +127,9 @@ def process_displayer(queue, queue_res, event,
             break
 
         if idx_frame_res == idx_frame and det_res is not None:
+            cv2.imwrite(f'/home/manu/tmp/1/{_save_idx}.bmp', frame)
+            _save_idx += 1
+
             last_idx_frame = idx_frame
             det_res = det_res.get('runs/detect/exp/labels/pseudo', [])
 
@@ -158,7 +162,8 @@ def process_displayer(queue, queue_res, event,
                     cdt = age > th_age and avg_conf > 0.2 and idx_frame > 25 * 4 and mask_avg > 0.4  # for pos sampling
                     # cdt = age > th_age and avg_conf > 0.2  # for neg sampling
                 else:
-                    cdt = age > th_age and avg_conf > 0.2 and avg_conf_cls > 0.4 and mask_avg > 0.1
+                    # cdt = age > th_age and avg_conf > 0.2 and avg_conf_cls > 0.4 and mask_avg > 0.1
+                    cdt = age > th_age and avg_conf > 0.2 and avg_area_diff > 0.2
 
                 color = get_color_for_class(cls)
 
@@ -191,7 +196,7 @@ def process_displayer(queue, queue_res, event,
                             (top_left_x, top_left_y + 32),
                             cv2.FONT_HERSHEY_SIMPLEX, 0.9, color, 2)
                 cv2.putText(frame,
-                            f"D{depth_avg:.2f}",
+                            f"D{depth_avg:.2f} D{avg_area_diff:.2f}",
                             (top_left_x, top_left_y + 64),
                             cv2.FONT_HERSHEY_SIMPLEX, 0.9, color, 2)
 

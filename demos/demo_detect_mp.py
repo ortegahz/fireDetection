@@ -5,8 +5,8 @@ import time
 from multiprocessing import Process, Queue, Event
 from queue import Empty
 
-# from processes.decoder import process_decoder
-from processes.decoder_orbbec import process_decoder
+from processes.decoder import process_decoder
+# from processes.decoder_orbbec import process_decoder
 from processes.detector import process_detector
 from processes.displayer import process_displayer
 from utils_wrapper.utils import set_logging
@@ -15,7 +15,7 @@ from utils_wrapper.utils import set_logging
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--path_video',
-                        default='/media/manu/ST2000DM005-2U91/fire/data/20240806/BOSH-FM数据采集/zheng-shinei/Z-D-60m-001.mp4')
+                        default='/media/manu/ST2000DM005-2U91/fire/data/20241111/12_0_f137beaa36f8625392d3d7aa477fcf5c.mp4')
     # parser.add_argument('--path_video',
     #                     default='/media/manu/ST2000DM005-2U91/fire/data/test/V3/positive/fire (81).mp4')
     # parser.add_argument('--path_video',
@@ -31,7 +31,7 @@ def parse_args():
     parser.add_argument('--device', type=str, default='0', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
     parser.add_argument('--imgsz', type=int, default=1280, help='inference size h,w')
     parser.add_argument('--weights', type=str,
-                        default='/media/manu/ST2000DM005-2U91/fire/yolov9/models/yolov9-s-fire-s1280_11 - ft ov7 + mixplv1/weights/last.pt')
+                        default='/media/manu/ST2000DM005-2U91/fire/yolov9/models/yolov9-s-fire-s1280_27 - ft ov7 + mixplv1f[un-done]/weights/last.pt')
     # parser.add_argument('--imgsz', type=int, default=640, help='inference size h,w')
     # parser.add_argument('--weights', type=str,
     #                     default='/media/manu/ST8000DM004-2U91/smoke/yolov9/models/yolov9-s-smoke-s640_25 - ov1 + pv0 + av0 [relu]/weights/best.pt')

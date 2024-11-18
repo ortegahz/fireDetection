@@ -10,14 +10,14 @@ from utils import set_logging, make_dirs
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--pos_dir', default='/media/manu/ST2000DM005-2U91/fire/data/pseudo_filtered/vis-10-09/正例')
-    parser.add_argument('--neg_dir', default='/media/manu/ST2000DM005-2U91/fire/data/pseudo_filtered/vis-10-09/反例')
+    parser.add_argument('--pos_dir', default='/media/manu/ST2000DM005-2U91/fire/data/pseudo_filtered/v0/20241107/正例')
+    parser.add_argument('--neg_dir', default='/media/manu/ST2000DM005-2U91/fire/data/pseudo_filtered/v0/20241107/反例')
     parser.add_argument('--vis_dir',
-                        default='/media/manu/ST2000DM005-2U91/fire/data/pseudo/fire_unlabeled/VOCdevkit/VOC2007/JPEGImages')
+                        default='/media/manu/ST2000DM005-2U91/fire/data/pseudo_filtered/v0/fire_unlabeled/VOCdevkit/VOC2007/JPEGImages')
     parser.add_argument('--preds_dir',
-                        default='/media/manu/ST2000DM005-2U91/fire/mixpl/results/fire_unlabeled_res_all/preds')
-    parser.add_argument('--output_imgs_dir', default='/home/manu/tmp/mm_filtered_res/imgs')
-    parser.add_argument('--output_labels_dir', default='/home/manu/tmp/mm_filtered_res/labels')
+                        default='/media/manu/ST2000DM005-2U91/fire/data/pseudo_filtered/v0/org/preds')
+    parser.add_argument('--output_imgs_dir', default='/media/manu/ST2000DM005-2U91/fire/data/pseudo_filtered/v0/out/imgs')
+    parser.add_argument('--output_labels_dir', default='/media/manu/ST2000DM005-2U91/fire/data/pseudo_filtered/v0/out/labels')
     return parser.parse_args()
 
 
