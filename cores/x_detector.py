@@ -201,6 +201,8 @@ class FireDetector:
             # cls, center_x, center_y, box_w, box_h, conf = (
             #     map(float, det.split()) if len(det.split()) == 6 else (*map(float, det.split()), 0.0)
             # )
+            if len(det.boxes.cls.cpu().numpy()) < 1:
+                continue
             cls = det.boxes.cls.cpu().numpy()[0]
             center_x, center_y, box_w, box_h = det.boxes.xywhn.cpu().numpy().flatten()
             conf = det.boxes.conf.cpu().numpy()[0]

@@ -162,8 +162,8 @@ def process_displayer(queue, queue_res, event,
                     cdt = age > th_age and avg_conf > 0.2 and idx_frame > 25 * 4 and mask_avg > 0.4  # for pos sampling
                     # cdt = age > th_age and avg_conf > 0.2  # for neg sampling
                 else:
-                    # cdt = age > th_age and avg_conf > 0.2 and avg_conf_cls > 0.4 and mask_avg > 0.1
-                    cdt = age > th_age and avg_conf > 0.2 and avg_area_diff > 0.2
+                    cdt = age > th_age and avg_conf > 0.3 and avg_conf_cls > 0.4 and mask_avg > 0.1
+                    # cdt = age > th_age and avg_conf > 0.2 and avg_area_diff > 0.2
 
                 color = get_color_for_class(cls)
 
