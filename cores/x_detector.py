@@ -3,6 +3,7 @@ import logging
 import os
 import sys
 from dataclasses import dataclass, field
+from ultralytics import YOLO
 
 import cv2
 import numpy as np
@@ -152,6 +153,11 @@ class FireDetector:
         self.model_cls_flow = ImageClassificationInferencer(model=_config, pretrained=_checkpoint, device='cuda')
         _checkpoint = '/media/manu/ST2000DM005-2U91/fire/mmpre/models/resnet18_8xb32_fire_rgb_v0/epoch_100.pth'
         self.model_cls_rgb = ImageClassificationInferencer(model=_config, pretrained=_checkpoint, device='cuda')
+        self.model_yolo11 = YOLO("/home/manu/tmp/runs_yolo11/train5/weights/best.pt")
+
+    def infer_yolo11(self, img):
+        res = self.model_yolo11(img)  # list of Results objects
+        return res
 
     def infer_yolo(self, img):
         original_cwd = os.getcwd()
@@ -192,9 +198,12 @@ class FireDetector:
 
         for det in detections:
             # Parsing detection details...
-            cls, center_x, center_y, box_w, box_h, conf = (
-                map(float, det.split()) if len(det.split()) == 6 else (*map(float, det.split()), 0.0)
-            )
+            # cls, center_x, center_y, box_w, box_h, conf = (
+            #     map(float, det.split()) if len(det.split()) == 6 else (*map(float, det.split()), 0.0)
+            # )
+            cls = det.boxes.cls.cpu().numpy()[0]
+            center_x, center_y, box_w, box_h = det.boxes.xywhn.cpu().numpy().flatten()
+            conf = det.boxes.conf.cpu().numpy()[0]
 
             bbox = [
                 center_x - box_w / 2,

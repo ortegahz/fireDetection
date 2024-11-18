@@ -46,13 +46,12 @@ def process_detector(args, queue, queue_res, event):
         tsp_frame, idx_frame, frame, fc = latest_item
 
         logging.info(f'Detector idx_frame --> {idx_frame} / {queue.qsize()}')
-        res = _detector.infer_yolo(frame)
-
-        # Update targets with detection results
-        detections = res.get('runs/detect/exp/labels/pseudo', [])
+        # res = _detector.infer_yolo(frame)
+        # detections = res.get('runs/detect/exp/labels/pseudo', [])
+        detections = _detector.infer_yolo11(frame)
         _detector.update(detections, frame, None)
 
         # Add target tracking results to the output
-        queue_res.put((idx_frame, res, _detector.targets))
+        queue_res.put((idx_frame, detections, _detector.targets))
 
     logging.info('detector processing loop exited gracefully.')

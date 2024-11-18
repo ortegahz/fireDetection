@@ -131,7 +131,7 @@ def process_displayer(queue, queue_res, event,
             _save_idx += 1
 
             last_idx_frame = idx_frame
-            det_res = det_res.get('runs/detect/exp/labels/pseudo', [])
+            # det_res = det_res.get('runs/detect/exp/labels/pseudo', [])
 
             th_age = 2 if is_sample else 4
             for target in targets:
