@@ -10,7 +10,7 @@ from utils import set_logging, make_dirs
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--pos_dir', default='/media/manu/ST2000DM005-2U91/fire/data/pseudo_filtered/v0/20241107/正例')
+    parser.add_argument('--pos_dir', default='/media/manu/ST2000DM005-2U91/fire/data/pseudo_filtered/v0/20241122/正例')
     parser.add_argument('--neg_dir', default='/media/manu/ST2000DM005-2U91/fire/data/pseudo_filtered/v0/20241107/反例')
     parser.add_argument('--vis_dir',
                         default='/media/manu/ST2000DM005-2U91/fire/data/pseudo_filtered/v0/fire_unlabeled/VOCdevkit/VOC2007/JPEGImages')

@@ -11,8 +11,7 @@ from utils import set_logging, make_dirs
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--base_dir', default='/home/Huangzhe/test/fire')
-    parser.add_argument('--subset1', default='v9', help='Name of the first subset to merge')
-    parser.add_argument('--subset2', default='pseudof', help='Name of the second subset to merge')
+    parser.add_argument('--subsets', default=['v9', 'test', 'pseudof'])
     parser.add_argument('--output_subset', default='train', help='Name of the output merged subset')
     return parser.parse_args()
 
@@ -41,16 +40,8 @@ def copy_files_and_write_list(list_file, imgs_dir, labels_dir, output_imgs_dir, 
             out_f.write(os.path.abspath(dst_img_path) + '\n')
 
 
-def merge_files(subset1, subset2, output_subset, base_dir):
-    # Define paths
-    subset1_imgs_dir = os.path.join(base_dir, 'images', subset1)
-    subset1_labels_dir = os.path.join(base_dir, 'labels', subset1)
-    subset1_list_file = os.path.join(base_dir, f'{subset1}.txt')
-
-    subset2_imgs_dir = os.path.join(base_dir, 'images', subset2)
-    subset2_labels_dir = os.path.join(base_dir, 'labels', subset2)
-    subset2_list_file = os.path.join(base_dir, f'{subset2}.txt')
-
+def merge_files(subsets, output_subset, base_dir):
+    # Output directories
     output_imgs_dir = os.path.join(base_dir, 'images', output_subset)
     output_labels_dir = os.path.join(base_dir, 'labels', output_subset)
     output_list_file = os.path.join(base_dir, f'{output_subset}.txt')
@@ -61,20 +52,25 @@ def merge_files(subset1, subset2, output_subset, base_dir):
     if os.path.exists(output_list_file):
         os.remove(output_list_file)
 
-    # Copy files from subset1
-    copy_files_and_write_list(subset1_list_file, subset1_imgs_dir, subset1_labels_dir, output_imgs_dir,
-                              output_labels_dir, output_list_file, progress_desc=f"Processing {subset1}")
+    for subset in subsets:
+        # Define paths for current subset
+        imgs_dir = os.path.join(base_dir, 'images', subset)
+        labels_dir = os.path.join(base_dir, 'labels', subset)
+        list_file = os.path.join(base_dir, f'{subset}.txt')
 
-    # Copy files from subset2
-    copy_files_and_write_list(subset2_list_file, subset2_imgs_dir, subset2_labels_dir, output_imgs_dir,
-                              output_labels_dir, output_list_file, progress_desc=f"Processing {subset2}")
+        # Copy files from current subset
+        copy_files_and_write_list(
+            list_file, imgs_dir, labels_dir,
+            output_imgs_dir, output_labels_dir,
+            output_list_file, progress_desc=f"Processing {subset}"
+        )
 
 
 def main():
     set_logging()
     args = parse_args()
     logging.info(f"Arguments: {args}")
-    merge_files(args.subset1, args.subset2, args.output_subset, args.base_dir)
+    merge_files(args.subsets, args.output_subset, args.base_dir)
     logging.info("Operation completed.")
 
 

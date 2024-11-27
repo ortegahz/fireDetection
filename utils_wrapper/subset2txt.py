@@ -16,7 +16,7 @@ def parse_args():
                         default='/home/Huangzhe/test/fire')
     parser.add_argument('--dir_root_out',
                         default='/home/Huangzhe/test/fire')
-    parser.add_argument('--subset', default='v9')
+    parser.add_argument('--subset', default='pseudof')
     return parser.parse_args()
 
 

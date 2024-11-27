@@ -8,11 +8,19 @@ from utils import make_dirs
 images_folders = [
     '/media/manu/ST2000DM005-2U91/fire/data/pseudo_filtered/v0/mm_results/images/pseudof',
     '/media/manu/ST2000DM005-2U91/fire/data/pseudo_filtered/v1/jiu-shiwai-pic-merge-pick-filtered/images',
-    "/media/manu/ST2000DM005-2U91/fire/data/pseudo_filtered/v1/yolo11_bgs"
+    '/media/manu/ST2000DM005-2U91/fire/data/pseudo_filtered/v1/pics_pick_filtered/images',
+    '/media/manu/ST2000DM005-2U91/fire/data/pseudo_filtered/v1/yolo11_bgs_20241115',
+    '/media/manu/ST2000DM005-2U91/fire/data/pseudo_filtered/v1/yolo11_bgs_20241118',
+    '/media/manu/ST2000DM005-2U91/fire/data/pseudo_filtered/v1/yolo11_bgs_20241120',
+    '/home/manu/mnt/ST2000DM005-2U91/fire/data/webs/d-fire-jb/images',
+    '/home/manu/mnt/ST2000DM005-2U91/fire/data/webs/fish-jb/images',
 ]
 labels_folders = [
     '/media/manu/ST2000DM005-2U91/fire/data/pseudo_filtered/v0/mm_results/labels/pseudof',
-    '/media/manu/ST2000DM005-2U91/fire/data/pseudo_filtered/v1/jiu-shiwai-pic-merge-pick-filtered/labels'
+    '/media/manu/ST2000DM005-2U91/fire/data/pseudo_filtered/v1/jiu-shiwai-pic-merge-pick-filtered/labels',
+    '/media/manu/ST2000DM005-2U91/fire/data/pseudo_filtered/v1/pics_pick_filtered/labels',
+    '/home/manu/mnt/ST2000DM005-2U91/fire/data/webs/d-fire-jb/labels',
+    '/home/manu/mnt/ST2000DM005-2U91/fire/data/webs/fish-jb/labels',
 ]
 output_folder = '/media/manu/ST2000DM005-2U91/fire/data/pseudo_filtered/out_all'
 name_subset = 'pseudof'

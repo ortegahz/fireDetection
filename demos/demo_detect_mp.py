@@ -15,9 +15,9 @@ from utils_wrapper.utils import set_logging
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--path_video',
-                        default='/media/manu/ST2000DM005-2U91/fire/data/20240806/BOSH-FM数据采集/xiang/X-60m-002.mp4')
+                        default='/media/manu/ST2000DM005-2U91/fire/data/pseudo_filtered/v1/yolo11_bgs_20241120/5_0_b0bcac3f4d196bb6c3af7fdae63337d0.mp4')
     # parser.add_argument('--path_video',
-    #                     default='/media/manu/ST2000DM005-2U91/fire/data/test/V3/positive/fire (81).mp4')
+    #                     default='/media/manu/ST2000DM005-2U91/fire/data/test/V3/positive/fire (16).mp4')
     # parser.add_argument('--path_video',
     #                     default='/media/manu/ST2000DM005-2U91/fire/data/test/V3/negative/nofire (10).mp4')
     # parser.add_argument('--path_video',

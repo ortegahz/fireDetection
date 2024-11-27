@@ -11,11 +11,12 @@ from utils import set_logging, make_dirs
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--labels_dir_in', default='/media/manu/ST2000DM005-2U91/fire/data/pseudo_filtered/out_all/labels/pseudof')
-    parser.add_argument('--imgs_dir_in', default='/media/manu/ST2000DM005-2U91/fire/data/pseudo_filtered/out_all/images/pseudof')
-    # parser.add_argument('--labels_dir_in', default='/media/manu/ST2000DM005-2U91/fire/data/20240806/BOSH-FM数据采集/jiu-shiwai-pic-merge-pick/labels')
-    # parser.add_argument('--imgs_dir_in', default='/media/manu/ST2000DM005-2U91/fire/data/20240806/BOSH-FM数据采集/jiu-shiwai-pic-merge-pick/images')
+    # parser.add_argument('--imgs_dir_in', default='/home/manu/mnt/ST2000DM005-2U91/fire/data/webs/fish/valid/images')
+    # parser.add_argument('--labels_dir_in', default='/home/manu/mnt/ST2000DM005-2U91/fire/data/webs/fish/valid/labels')
+    parser.add_argument('--imgs_dir_in', default='/home/manu/tmp/labelme/images/')
+    parser.add_argument('--labels_dir_in', default='/home/manu/tmp/labelme_yolo/labels_txt/')
     parser.add_argument('--output_dir', default='/home/manu/tmp/labels_show_results')
+    parser.add_argument('--img_ext', default='png')
     return parser.parse_args()
 
 
@@ -42,7 +43,7 @@ def draw_boxes_on_image(img_path, label_path):
         bottom_right_y = int(center_y + box_h / 2)
 
         cv2.rectangle(img, (top_left_x, top_left_y), (bottom_right_x, bottom_right_y), (0, 255, 0), 2)
-        cv2.putText(img, str(int(cls)), (top_left_x, top_left_y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (36, 255, 12), 2)
+        cv2.putText(img, str(int(cls)), (top_left_x, top_left_y + 32), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (36, 255, 12), 2)
 
     return img
 
@@ -53,7 +54,7 @@ def run(args):
 
     for i, label_file in enumerate(tqdm(label_files, desc="Processing labels")):
         file_name = os.path.splitext(os.path.basename(label_file))[0]
-        img_file = file_name + '.jpg'
+        img_file = file_name + '.' + args.img_ext
         img_path = os.path.join(args.imgs_dir_in, img_file)
         output_path = os.path.join(args.output_dir, f'{i}_{img_file}')
 

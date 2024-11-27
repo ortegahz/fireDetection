@@ -4,8 +4,8 @@ from utils import set_logging, make_dirs
 
 # 定义文件夹路径
 input_folder = '/home/manu/tmp/labels_show_results/'  # 包含jpg图片的文件夹
-search_folder = '/media/manu/ST2000DM005-2U91/fire/data/20240806/BOSH-FM数据采集/jiu-shiwai-pic-merge-pick/'  # 查找的图片和标签文件夹
-output_folder = '/media/manu/ST2000DM005-2U91/fire/data/20240806/BOSH-FM数据采集/jiu-shiwai-pic-merge-pick-filtered/'  # 输出文件夹
+search_folder = '/media/manu/ST2000DM005-2U91/fire/data/test/国标火/pics_pick/'  # 查找的图片和标签文件夹
+output_folder = '/media/manu/ST2000DM005-2U91/fire/data/test/国标火/pics_pick_filtered/'  # 输出文件夹
 
 # 在输出文件夹中创建images和labels子文件夹
 make_dirs(output_folder, reset=True)
