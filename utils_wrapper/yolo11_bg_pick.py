@@ -40,7 +40,7 @@ def copy_images_with_labels(txt_folder, jpg_folder, output_folder):
 
 
 # 使用示例
-txt_directory = '/media/manu/ST2000DM005-2U91/workspace/ultralytics/runs/detect/predict8/'
+txt_directory = '/media/manu/ST2000DM005-2U91/workspace/ultralytics/runs/detect/predict/'
 jpg_directory = txt_directory
 output_directory = '/home/manu/tmp/yolo11_bgs'
 make_dirs(output_directory, reset=True)

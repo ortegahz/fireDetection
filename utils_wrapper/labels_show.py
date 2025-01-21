@@ -11,10 +11,10 @@ from utils import set_logging, make_dirs
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    # parser.add_argument('--imgs_dir_in', default='/home/manu/mnt/ST2000DM005-2U91/fire/data/webs/fish/valid/images')
-    # parser.add_argument('--labels_dir_in', default='/home/manu/mnt/ST2000DM005-2U91/fire/data/webs/fish/valid/labels')
-    parser.add_argument('--imgs_dir_in', default='/home/manu/tmp/labelme/images/')
-    parser.add_argument('--labels_dir_in', default='/home/manu/tmp/labelme_yolo/labels_txt/')
+    # parser.add_argument('--imgs_dir_in', default='/home/manu/mnt/ST2000DM005-2U91/fire/data/pseudo_filtered/out_all/images/pseudof/')
+    # parser.add_argument('--labels_dir_in', default='/home/manu/mnt/ST2000DM005-2U91/fire/data/pseudo_filtered/out_all/labels/pseudof/')
+    parser.add_argument('--imgs_dir_in', default='/home/manu/tmp/aigc/images/')
+    parser.add_argument('--labels_dir_in', default='/home/manu/tmp/aigc/labels_txt')
     parser.add_argument('--output_dir', default='/home/manu/tmp/labels_show_results')
     parser.add_argument('--img_ext', default='png')
     return parser.parse_args()

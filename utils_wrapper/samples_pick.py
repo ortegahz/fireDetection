@@ -12,16 +12,16 @@ from utils import set_logging, make_dirs
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--labels_dir_in',
-                        default='/media/manu/ST2000DM005-2U91/workspace/ultralytics/runs/detect/predict2/labels/',
+                        default='/home/manu/tmp/labelme/labels_txt/',
                         help='Input directory for label files')
     parser.add_argument('--imgs_dir_in',
-                        default='/media/manu/ST2000DM005-2U91/fire/data/test/国标火/pics/',
+                        default='/home/manu/tmp/labelme/images/',
                         help='Input directory for image files')
     parser.add_argument('--labels_dir_out',
-                        default='/media/manu/ST2000DM005-2U91/fire/data/test/国标火/pics_pick/labels',
+                        default='/home/manu/tmp/pics_pick/labels',
                         help='Output directory for label files')
     parser.add_argument('--imgs_dir_out',
-                        default='/media/manu/ST2000DM005-2U91/fire/data/test/国标火/pics_pick/images',
+                        default='/home/manu/tmp/pics_pick/images',
                         help='Output directory for image files')
     parser.add_argument('--conf_threshold', type=float, nargs=2, default=[0.0, 1.0],
                         help='Confidence threshold for selecting images and labels')

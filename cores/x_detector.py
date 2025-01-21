@@ -153,7 +153,7 @@ class FireDetector:
         self.model_cls_flow = ImageClassificationInferencer(model=_config, pretrained=_checkpoint, device='cuda')
         _checkpoint = '/media/manu/ST2000DM005-2U91/fire/mmpre/models/resnet18_8xb32_fire_rgb_v0/epoch_100.pth'
         self.model_cls_rgb = ImageClassificationInferencer(model=_config, pretrained=_checkpoint, device='cuda')
-        self.model_yolo11 = YOLO("/home/manu/tmp/runs_yolo11/train5/weights/best.pt")
+        self.model_yolo11 = YOLO("/home/manu/tmp/runs_yolo11/train11/weights/best.pt")
 
     def infer_yolo11(self, img):
         res = self.model_yolo11(img)  # list of Results objects

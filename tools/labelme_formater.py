@@ -239,13 +239,13 @@ def makedir(path):
 
 
 if __name__ == "__main__":
-    classes_name = ['fire',]
-    classes_name.append("del")
+    classes_name = ['fire', 'smoke']
+    # classes_name.append("del")
 
-    src = '/home/manu/tmp/labelme/'
+    src = '/home/manu/tmp/fish_pick_sorted/valid/'
     tar = src
-    src_label_format = "json"
-    tar_label_format = "txt"
+    src_label_format = "txt"
+    tar_label_format = "xml"
 
     is_copyimg = False
     is_getnolabelimg = False
