@@ -239,10 +239,11 @@ def makedir(path):
 
 
 if __name__ == "__main__":
-    classes_name = ['fire', 'smoke']
+    classes_name = ['fire', 'candle_flame', 'round_fire', 'smoke']
+    # classes_name = ['fire', 'smoke']
     # classes_name.append("del")
 
-    src = '/home/manu/tmp/fish_pick_sorted/valid/'
+    src = '/home/manu/mnt/ST2000DM005-2U91/fire/data/webs/d-fire-jb/'
     tar = src
     src_label_format = "txt"
     tar_label_format = "xml"
@@ -261,8 +262,10 @@ if __name__ == "__main__":
             noLableDir = os.path.join(tar, "noLabelDir", phase)
             makedir(noLableDir)
 
+        cnt_all, cnt_miss, cnt_normal = 0, 0, 0
         for image_name in os.listdir(os.path.join(src, "images", phase)):
             print(image_name)
+            cnt_all += 1
             image_path = os.path.join(src, "images", phase, image_name)
 
             src_label_name = os.path.splitext(image_name)[0] + "." + src_label_format
@@ -271,12 +274,12 @@ if __name__ == "__main__":
             src_label_path = os.path.join(src, "labels_" + src_label_format, phase, src_label_name)
 
             if not os.path.exists(src_label_path):
-                print()
+                # print()
                 info = []
 
             try:
                 info = eval("get_{}_info".format(src_label_format))(src_label_path, image_path, classes_name)
-                print(info)
+                # print(info)
             except:
                 info = []
             if info != [] and info["shapes"] == []:
@@ -293,6 +296,7 @@ if __name__ == "__main__":
             if info:
                 tar_label_path = os.path.join(tar, "labels_" + tar_label_format, phase, tar_label_name)
                 eval("to_{}".format(tar_label_format))(tar_label_path, info, classes_name)
+                cnt_normal += 1
 
             if is_copyimg:
                 if is_getnolabelimg:
@@ -302,3 +306,6 @@ if __name__ == "__main__":
                         shutil.copy(image_path, noLableDir)
                 else:
                     shutil.copy(image_path, tar_images_dir)
+
+    print(f'cnt_all --> {cnt_all}')
+    print(f'cnt_normal --> {cnt_normal}')

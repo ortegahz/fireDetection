@@ -51,9 +51,9 @@ def process_files(image_dir, label_dir, output_dir):
         shutil.copy(image_file, output_file_path)
 
 
-image_dir = '/home/manu/mnt/ST2000DM005-2U91/fire/data/webs/fish'
+image_dir = '/home/manu/mnt/ST2000DM005-2U91/fire/data/aigc_20241230/v01merge'
 label_dir = image_dir
-output_dir = '/home/manu/mnt/ST2000DM005-2U91/fire/data/webs/fish-jb'
+output_dir = '/home/manu/mnt/ST2000DM005-2U91/fire/data/aigc_20241230/v01merge_jb'
 
 make_dirs(output_dir, reset=True)
 

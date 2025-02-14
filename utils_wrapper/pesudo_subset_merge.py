@@ -13,19 +13,21 @@ images_folders = [
     '/media/manu/ST2000DM005-2U91/fire/data/pseudo_filtered/v1/yolo11_bgs_20241118',
     '/media/manu/ST2000DM005-2U91/fire/data/pseudo_filtered/v1/yolo11_bgs_20241120',
     '/home/manu/mnt/ST2000DM005-2U91/fire/data/webs/d-fire-jb/images',
-    '/home/manu/mnt/ST2000DM005-2U91/fire/data/webs/fish-jb/images',
+    '/home/manu/mnt/ST2000DM005-2U91/fire/data/webs/fish-jb/images',  # new
     '/home/manu/mnt/ST2000DM005-2U91/fire/data/others/算法图片_labelme/images',
     '/media/manu/ST2000DM005-2U91/fire/data/others/20241127_pos_pics_merge_labelme/images/',
     '/media/manu/ST2000DM005-2U91/fire/data/pseudo_filtered/v1/yolo11_bgs_20241209',
+    '/home/manu/mnt/ST2000DM005-2U91/fire/data/aigc_20241230/v01merge_jb/images',  # new
 ]
 labels_folders = [
     '/media/manu/ST2000DM005-2U91/fire/data/pseudo_filtered/v0/mm_results/labels/pseudof',
     '/media/manu/ST2000DM005-2U91/fire/data/pseudo_filtered/v1/jiu-shiwai-pic-merge-pick-filtered/labels',
     '/media/manu/ST2000DM005-2U91/fire/data/pseudo_filtered/v1/pics_pick_filtered/labels',
     '/home/manu/mnt/ST2000DM005-2U91/fire/data/webs/d-fire-jb/labels',
-    '/home/manu/mnt/ST2000DM005-2U91/fire/data/webs/fish-jb/labels',
+    '/home/manu/mnt/ST2000DM005-2U91/fire/data/webs/fish-jb/labels',  # new
     '/home/manu/mnt/ST2000DM005-2U91/fire/data/others/算法图片_labelme/labels_txt',
     '/media/manu/ST2000DM005-2U91/fire/data/others/20241127_pos_pics_merge_labelme/labels/',
+    '/home/manu/mnt/ST2000DM005-2U91/fire/data/aigc_20241230/v01merge_jb/labels',  # new
 ]
 output_folder = '/media/manu/ST2000DM005-2U91/fire/data/pseudo_filtered/out_all'
 name_subset = 'pseudof'

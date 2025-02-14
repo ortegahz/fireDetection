@@ -3,11 +3,11 @@ import logging
 import os
 import sys
 from dataclasses import dataclass, field
-from ultralytics import YOLO
 
 import cv2
 import numpy as np
 from mmpretrain import ImageClassificationInferencer
+from ultralytics import YOLO
 
 
 @dataclass
@@ -153,7 +153,7 @@ class FireDetector:
         self.model_cls_flow = ImageClassificationInferencer(model=_config, pretrained=_checkpoint, device='cuda')
         _checkpoint = '/media/manu/ST2000DM005-2U91/fire/mmpre/models/resnet18_8xb32_fire_rgb_v0/epoch_100.pth'
         self.model_cls_rgb = ImageClassificationInferencer(model=_config, pretrained=_checkpoint, device='cuda')
-        self.model_yolo11 = YOLO("/home/manu/tmp/runs_yolo11/train11/weights/best.pt")
+        self.model_yolo11 = YOLO("/home/manu/tmp/runs_yolo11/train13/weights/best.pt")
 
     def infer_yolo11(self, img):
         res = self.model_yolo11(img)  # list of Results objects
@@ -191,7 +191,7 @@ class FireDetector:
         cls_conf = result['pred_scores'][1]
         return cls_conf
 
-    def update(self, detections, frame, frame_depth=None):
+    def update_yolov9(self, detections, frame, frame_depth=None):
         fgmask = self.fgbg.apply(frame)
         matched = []
         frame_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -206,6 +206,134 @@ class FireDetector:
             cls = det.boxes.cls.cpu().numpy()[0]
             center_x, center_y, box_w, box_h = det.boxes.xywhn.cpu().numpy().flatten()
             conf = det.boxes.conf.cpu().numpy()[0]
+
+            bbox = [
+                center_x - box_w / 2,
+                center_y - box_h / 2,
+                center_x + box_w / 2,
+                center_y + box_h / 2
+            ]
+            area = (bbox[2] - bbox[0]) * (bbox[3] - bbox[1])
+
+            best_iou = 0
+            best_target = None
+
+            for target in self.targets:
+                iou = self._calculate_iou(bbox, target.bbox)
+                if iou > best_iou:
+                    best_iou = iou
+                    best_target = target
+
+            if best_iou > self.iou_threshold:
+                # Update existing target properties...
+                best_target.bbox = bbox
+                best_target.bbox_list.append(bbox)
+                best_target.lost_frames = 0
+                best_target.age += 1
+                best_target.conf_list.append(conf)
+
+                diff = self._calculate_frame_difference(
+                    self.previous_frame, frame_gray, best_target.bbox, best_target.last_valid_bbox, frame.shape
+                )
+                best_target.diff_list.append(diff)
+
+                # Extract difference patch and update last valid bbox
+                diff_patch = self._calculate_diff_patch(self.previous_frame, frame_gray, bbox, frame.shape)
+                best_target.diff_patches.append(diff_patch)
+
+                best_target.last_valid_bbox = bbox
+
+                mask_avg = self._calculate_mask_avg(fgmask, best_target.bbox, frame.shape)
+                best_target.mask_avg_list.append(mask_avg)
+
+                depth_avg = 0.0
+                if frame_depth is not None:
+                    depth_avg = self._calculate_depth_avg(frame_depth, best_target.bbox, frame.shape)
+                best_target.depth_avg_list.append(depth_avg)
+
+                best_target.area_list.append(area)
+                area_diff = abs(area - best_target.area_list[-2]) if len(best_target.area_list) > 1 else 0.0
+                best_target.area_diff_list.append(area_diff)
+
+                # Extract and store image patch
+                image_patch = self._extract_patch(frame, bbox, frame.shape)
+                best_target.image_patches.append(image_patch)
+
+                # Calculate and store optical flow patch if previous frame is available
+                flow_patch = np.array([])
+                if self.previous_frame is not None:
+                    flow_patch = self._calculate_optical_flow(self.previous_frame, frame_gray, bbox, frame.shape)
+                    best_target.flow_patches.append(flow_patch)
+
+                _cls_conf_flow = self._patch_infer_flow(flow_patch, diff_patch)
+                best_target.conf_cls_list.append(_cls_conf_flow)
+                _cls_conf_rgb = self._patch_infer_rgb(image_patch)
+                best_target.conf_cls_rgb_list.append(_cls_conf_rgb)
+
+                matched.append(best_target)
+            else:
+                depth_avg = 0.0
+                if frame_depth is not None:
+                    depth_avg = self._calculate_depth_avg(frame_depth, bbox, frame.shape)
+
+                # Add new target
+                new_target = Target(
+                    bbox=bbox,
+                    last_valid_bbox=bbox,
+                    bbox_list=[bbox],
+                    id=self.next_id,
+                    lost_frames=0,
+                    cls=cls,
+                    age=1,
+                    conf_list=[conf],
+                    conf_cls_list=[0.0],
+                    conf_cls_rgb_list=[0.0],  # match flow logic
+                    diff_list=[0.0],
+                    center_list=[(center_x, center_y)],
+                    area_list=[area],
+                    area_diff_list=[0.0],
+                    mask_avg_list=[self._calculate_mask_avg(fgmask, bbox, frame.shape)],
+                    depth_avg_list=[depth_avg],
+                    image_patches=[self._extract_patch(frame, bbox, frame.shape)],
+                    flow_patches=[],
+                    diff_patches=[]
+                )
+                self.targets.append(new_target)
+                self.next_id += 1
+
+        for target in self.targets:
+            if target not in matched:
+                depth_avg = 0.0
+                if frame_depth is not None:
+                    depth_avg = self._calculate_depth_avg(frame_depth, target.bbox, frame.shape)
+
+                target.lost_frames += 1
+                target.conf_list.append(-1.0)
+                target.conf_cls_list.append(-1.0)
+                target.conf_cls_rgb_list.append(-1.0)
+                target.diff_list.append(0.0)
+
+                mask_avg = self._calculate_mask_avg(fgmask, target.bbox, frame.shape)
+                target.depth_avg_list.append(depth_avg)
+                target.mask_avg_list.append(mask_avg)
+                target.bbox_list.append(target.bbox)
+
+        self.targets = [t for t in self.targets if t.lost_frames <= self.max_lost_frames]
+        self.previous_frame = frame_gray
+
+    def update(self, detections, frame, frame_depth=None):
+        fgmask = self.fgbg.apply(frame)
+        matched = []
+        frame_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+        dets = detections[0]  # single img
+        for cls, box, conf in zip(dets.boxes.cls.cpu().numpy(),
+                                  dets.boxes.xywhn.cpu().numpy(),
+                                  dets.boxes.conf.cpu().numpy()):
+            center_x, center_y, box_w, box_h = box
+
+            if int(cls) == 3:  # smoke
+                continue
 
             bbox = [
                 center_x - box_w / 2,
