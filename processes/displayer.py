@@ -5,6 +5,25 @@ import cv2
 import numpy as np
 
 
+def _motion_features_save(frame_buffer, save_root, video_name, idx_frame):
+    frame_3s_ago = frame_buffer[0]
+    frame_2s_ago = frame_buffer[1]
+    frame_1s_ago = frame_buffer[2]
+
+    diff_1s = cv2.absdiff(frame_1s_ago, frame_3s_ago)
+    diff_2s = cv2.absdiff(frame_1s_ago, frame_2s_ago)
+    diff_3s = cv2.absdiff(frame_1s_ago, frame_1s_ago)
+
+    diff_1s_rgb = cv2.cvtColor(diff_1s, cv2.COLOR_GRAY2BGR)
+    diff_2s_rgb = cv2.cvtColor(diff_2s, cv2.COLOR_GRAY2BGR)
+    diff_3s_rgb = cv2.cvtColor(diff_3s, cv2.COLOR_GRAY2BGR)
+
+    combined_rgb = cv2.merge([diff_3s_rgb[:, :, 0], diff_2s_rgb[:, :, 1], diff_1s_rgb[:, :, 2]])
+
+    combined_file_path = os.path.join(save_root, f'{video_name}_combined_rgb_{idx_frame}.jpg')
+    cv2.imwrite(combined_file_path, combined_rgb)
+
+
 def _patch_save(target, idx_frame, video_name, save_root):
     # Save combined HSV-H patch
     if target.flow_patches and target.diff_patches and target.image_patches:
@@ -99,7 +118,7 @@ def calculate_avg_area_diff(target, th_age):
 
 def process_displayer(queue, queue_res, event,
                       video_path='/media/manu/ST2000DM005-2U91/fire/test/V3/negative/nofire (4096).mp4', show=True,
-                      save_root='/home/manu/tmp/fire_test_results', is_sample=False):
+                      save_root='/home/manu/tmp/fire_test_results', is_sample=True):
     video_name = os.path.basename(video_path)
     _save_idx = 0
     if show:
@@ -111,7 +130,7 @@ def process_displayer(queue, queue_res, event,
     # _checkpoint = '/home/manu/tmp/work_dirs/resnet18_8xb32_fire/epoch_100.pth'
     # model_cls = ImageClassificationInferencer(model=_config, pretrained=_checkpoint, device='cuda')
 
-    idx_frame_res, det_res, targets, is_alarm = -1, None, [], False
+    idx_frame_res, det_res, targets, is_alarm, frame_buffer = -1, None, [], False, []
     last_idx_frame = -1
     while not event.is_set():
         tsp_frame, idx_frame, frame, fc = queue.get()
@@ -119,7 +138,7 @@ def process_displayer(queue, queue_res, event,
         logging.info(f'displayer idx_frame --> {idx_frame} / {queue.qsize()}')
 
         while idx_frame_res < idx_frame and not event.is_set():
-            idx_frame_res, det_res, targets = queue_res.get()
+            idx_frame_res, det_res, targets, frame_buffer = queue_res.get()
             logging.info(f'displayer idx_frame_res --> {idx_frame_res} / {queue_res.qsize()}')
 
         if last_idx_frame == idx_frame:
@@ -159,8 +178,9 @@ def process_displayer(queue, queue_res, event,
                 # conf_cls = _patch_infer(target, model_cls)
 
                 if is_sample:
-                    cdt = age > th_age and avg_conf > 0.2 and idx_frame > 25 * 4 and mask_avg > 0.4  # for pos sampling
+                    # cdt = age > th_age and avg_conf > 0.2 and idx_frame > 25 * 4 and mask_avg > 0.4  # for pos sampling
                     # cdt = age > th_age and avg_conf > 0.2  # for neg sampling
+                    cdt = age > th_age and avg_conf > 0.3
                 else:
                     cdt = age > th_age and avg_conf > 0.3 and avg_conf_cls > 0.4 and mask_avg > 0.1
                     # cdt = age > th_age and avg_conf > 0.2 and avg_area_diff > 0.2
@@ -183,7 +203,8 @@ def process_displayer(queue, queue_res, event,
                     print(f'is_alarm --> {is_alarm}')
 
                     if is_sample:
-                        _patch_save(target, idx_frame, video_name, save_root)
+                        pass
+                        # _patch_save(target, idx_frame, video_name, save_root)
                     else:
                         cv2.rectangle(frame, (top_left_x, top_left_y), (bottom_right_x, bottom_right_y), color, 2)
                         frame_file_path = os.path.join(save_root, f'{video_name}.jpg')
@@ -199,6 +220,9 @@ def process_displayer(queue, queue_res, event,
                             f"D{depth_avg:.2f} D{avg_area_diff:.2f}",
                             (top_left_x, top_left_y + 64),
                             cv2.FONT_HERSHEY_SIMPLEX, 0.9, color, 2)
+
+            if is_sample and is_alarm and len(frame_buffer) >= 3:
+                _motion_features_save(frame_buffer, save_root, video_name, idx_frame)
 
         if not is_sample:
             alarm_status = "ALARM" if is_alarm else "NO ALARM"

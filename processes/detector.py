@@ -52,6 +52,6 @@ def process_detector(args, queue, queue_res, event):
         _detector.update(detections, frame, None)
 
         # Add target tracking results to the output
-        queue_res.put((idx_frame, detections, _detector.targets))
+        queue_res.put((idx_frame, detections, _detector.targets, _detector.frame_buffer))
 
     logging.info('detector processing loop exited gracefully.')

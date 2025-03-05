@@ -80,17 +80,17 @@ def rgb_to_jpg_plus(rgb_path, output_path, width=1440, height=1080):
 
 
 if __name__ == '__main__':
-    # rgb_path = '/run/user/1000/gvfs/smb-share:server=172.20.254.27,share=青鸟消防智慧可视化02/00部门共享/【临时文件交换目录】/【to】汤香渝/热成像数据_20241028'
-    # output_path = '/home/manu/tmp/rgb2jpg'
-    #
-    # make_dirs(output_path, reset=True)
-    # rgb_to_jpg_plus(rgb_path, output_path)
-
-    input_path = '/home/manu/tmp/smoke1225_8'
-    output_path = '/home/manu/tmp/rgb'
+    rgb_path = '/home/manu/tmp/data/'
+    output_path = '/home/manu/tmp/rgb2jpg'
 
     make_dirs(output_path, reset=True)
-    jpg_to_rgb(input_path, output_path)
+    rgb_to_jpg_plus(rgb_path, output_path)
+
+    # input_path = '/home/manu/tmp/smoke1225_8'
+    # output_path = '/home/manu/tmp/rgb'
+    #
+    # make_dirs(output_path, reset=True)
+    # jpg_to_rgb(input_path, output_path)
 
 # if __name__ == '__main__':
 # # pic_path = "E:\\video\pictures"

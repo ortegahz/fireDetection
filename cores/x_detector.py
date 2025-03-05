@@ -146,7 +146,8 @@ class FireDetector:
         self.next_id = 0
         self.iou_threshold = 0.1
         self.max_lost_frames = 5
-        self.previous_frame = None
+        self.previous_frames = None
+        self.frame_buffer = []
         self.fgbg = cv2.createBackgroundSubtractorMOG2()
         _config = '/media/manu/ST2000DM005-2U91/workspace/mmpretrain/configs/resnet/resnet18_8xb32_fire.py'
         _checkpoint = '/media/manu/ST2000DM005-2U91/fire/mmpre/models/resnet18_8xb32_fire_flow/epoch_100.pth'
@@ -448,6 +449,9 @@ class FireDetector:
 
         self.targets = [t for t in self.targets if t.lost_frames <= self.max_lost_frames]
         self.previous_frame = frame_gray
+        if len(self.frame_buffer) >= 3:
+            self.frame_buffer.pop(0)
+        self.frame_buffer.append(frame_gray)
 
     def _calculate_diff_patch(self, prev_frame, curr_frame, bbox, frame_shape):
         if prev_frame is None or curr_frame is None:
