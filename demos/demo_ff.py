@@ -3,7 +3,7 @@ from collections import deque
 import cv2
 
 # Open the video file or capture device
-cap = cv2.VideoCapture('/home/manu/mnt/ST2000DM005-2U91/fire/data/20240806/BOSH-FM数据采集/xiang/X-120m-002.mp4')
+cap = cv2.VideoCapture('/home/manu/mnt/ST2000DM005-2U91/fire/data/20240806/BOSH-FM数据采集/jiu-shiwai/J-D-20m-003.mp4')
 
 # Get the FPS from the video
 FPS = int(cap.get(cv2.CAP_PROP_FPS))
@@ -33,9 +33,12 @@ while True:
     # Only process the frame if we have enough history (3 seconds of frames)
     if len(previous_frames) >= 3 * FPS + 1:
         # Calculate differences with 1-second, 2-second, and 3-second previous frames
-        diff_1s = cv2.absdiff(current_gray, previous_frames[-1 - FPS])
-        diff_2s = cv2.absdiff(current_gray, previous_frames[-1 - 2 * FPS])
-        diff_3s = cv2.absdiff(current_gray, previous_frames[-1 - 3 * FPS])
+        # diff_1s = cv2.absdiff(current_gray, previous_frames[-1 - FPS])
+        # diff_2s = cv2.absdiff(current_gray, previous_frames[-1 - 2 * FPS])
+        # diff_3s = cv2.absdiff(current_gray, previous_frames[-1 - 3 * FPS])
+        diff_1s = previous_frames[-1 - FPS]
+        diff_2s = previous_frames[-1 - 2 * FPS]
+        diff_3s = previous_frames[-1 - 3 * FPS]
 
         # Convert each difference to a 3-channel image
         diff_1s_rgb = cv2.cvtColor(diff_1s, cv2.COLOR_GRAY2BGR)

@@ -243,7 +243,7 @@ if __name__ == "__main__":
     # classes_name = ['fire', 'smoke']
     # classes_name.append("del")
 
-    src = '/home/manu/mnt/ST2000DM005-2U91/fire/data/webs/d-fire-jb/'
+    src = '/home/manu/mnt/ST2000DM005-2U91/fire/data/D568.火焰，烟雾数据集/pseudo/'
     tar = src
     src_label_format = "txt"
     tar_label_format = "xml"
@@ -264,7 +264,7 @@ if __name__ == "__main__":
 
         cnt_all, cnt_miss, cnt_normal = 0, 0, 0
         for image_name in os.listdir(os.path.join(src, "images", phase)):
-            print(image_name)
+            # print(image_name)
             cnt_all += 1
             image_path = os.path.join(src, "images", phase, image_name)
 
