@@ -12,11 +12,9 @@ def parse_args():
     #                     default='/home/Huangzhe/test/FireDetectionV9_20241012_4classes')
     # parser.add_argument('--dir_root_out',
     #                     default='/home/Huangzhe/test/FireDetectionV9_20241012_4classes')
-    parser.add_argument('--dir_root_in',
-                        default='/home/Huangzhe/test/fire')
-    parser.add_argument('--dir_root_out',
-                        default='/home/Huangzhe/test/fire')
-    parser.add_argument('--subset', default='pseudof')
+    parser.add_argument('--dir_root_in', default='/home/Huangzhe/test/person_sorted/')
+    parser.add_argument('--dir_root_out', default='/home/Huangzhe/test/person_sorted/')
+    parser.add_argument('--subset', default='train')  # val or train
     return parser.parse_args()
 
 
