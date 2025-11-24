@@ -1,3 +1,5 @@
+# FILE: trainval_spilt.py
+
 import argparse
 import glob
 import logging
@@ -78,7 +80,18 @@ def copy_files(file_list, args, phase):
         shutil.copy(img_path, os.path.join(dst_img_dir, file_name))
 
         # 复制标签
-        shutil.copy(label_path, os.path.join(dst_label_dir, label_name))
+        # 读取并修改标签: 0(head) <-> 1(person) 互换
+        with open(label_path, 'r') as f_in, open(os.path.join(dst_label_dir, label_name), 'w') as f_out:
+            for line in f_in:
+                parts = line.strip().split()
+                if not parts:
+                    continue
+                cls_id = int(parts[0])
+                if cls_id == 0:
+                    cls_id = 1
+                elif cls_id == 1:
+                    cls_id = 0
+                f_out.write(f"{cls_id} {' '.join(parts[1:])}\n")
 
 
 def run(args):
